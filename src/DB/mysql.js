@@ -62,11 +62,11 @@ function agregar(tabla, data){
     });
 }
 
-function eliminar(tabla, id){
+function eliminar(tabla, id) {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM ?? WHERE id = ?`; 
+        const query = `DELETE FROM ?? WHERE IDUsuario = ?`; // Corrigido
         conexion.query(query, [tabla, id], (error, results) => {
-            if(error) return reject(error);
+            if (error) return reject(error);
             resolve(results);
         });
     });
