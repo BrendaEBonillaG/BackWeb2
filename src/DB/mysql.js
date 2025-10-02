@@ -34,10 +34,9 @@ function conMysql(){
 
 conMysql();
 
-// Actualización de la consulta para que el nombre de la tabla sea un parámetro dinámico
 function todos(tabla){
     return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ??`; // Usamos ?? para identificar una tabla de forma segura
+        const query = `SELECT * FROM ??`; 
         conexion.query(query, [tabla], (error, results) => {
             if(error) return reject(error);
             resolve(results);
@@ -46,9 +45,9 @@ function todos(tabla){
 }
 
 function uno(tabla, id) {
-    // Consulta para obtener un solo registro de una tabla
+
     return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ?? WHERE id = ?`; // Usamos ?? para la tabla y ? para el valor de id
+        const query = `SELECT * FROM ?? WHERE id = ?`; 
         conexion.query(query, [tabla, id], (error, results) => {
             if(error) return reject(error);
             resolve(results);
@@ -58,7 +57,7 @@ function uno(tabla, id) {
 
 function agregar(tabla, data){
     return new Promise((resolve, reject) => {
-        const query = `INSERT INTO ?? SET ?`; // Usamos ?? para la tabla y ? para los valores a insertar
+        const query = `INSERT INTO ?? SET ?`; 
         conexion.query(query, [tabla, data], (error, results) => {
             if(error) return reject(error);
             resolve(results);
@@ -68,7 +67,7 @@ function agregar(tabla, data){
 
 function eliminar(tabla, id){
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM ?? WHERE id = ?`; // Usamos ?? para la tabla y ? para el valor de id
+        const query = `DELETE FROM ?? WHERE id = ?`; 
         conexion.query(query, [tabla, id], (error, results) => {
             if(error) return reject(error);
             resolve(results);
