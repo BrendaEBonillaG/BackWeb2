@@ -1,10 +1,14 @@
 const express = require('express');
+const morgan = require('morgan');
 const config = require('./config');
 
-// Asegúrate de que la ruta sea correcta
+
 const clientes = require('./modulos/clientes/rutas');
 
 const app = express();
+
+//Middleware
+app.use(morgan('dev'));
 
 // Configuración
 app.set('port', config.app.port);

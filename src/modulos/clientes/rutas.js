@@ -14,5 +14,14 @@ router.get('/', async function (req, res) {
   }
 });
 
+router.get('/:id', async function (req, res) {
+  try {
+    const todos = await controlador.uno(req.params.id); 
+    respuesta.success(req, res, todos, 200);
+  } catch (error) {
+    respuesta.error(req, res, 'Error al obtener los datos', 500); 
+  }
+});
+
 
 module.exports = router;

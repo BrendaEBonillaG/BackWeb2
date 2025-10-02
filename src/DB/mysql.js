@@ -38,19 +38,16 @@ function todos(tabla){
     return new Promise((resolve, reject) => {
         const query = `SELECT * FROM ??`; 
         conexion.query(query, [tabla], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
+            return error ? reject(error) : resolve(results);
         });
     });
 }
 
 function uno(tabla, id) {
-
     return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ?? WHERE id = ?`; 
+        const query = `SELECT * FROM ?? WHERE IDUsuario = ?`; 
         conexion.query(query, [tabla, id], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
+            return error ? reject(error) : resolve(results);
         });
     });
 }
