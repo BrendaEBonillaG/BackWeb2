@@ -1,10 +1,18 @@
 const express = require('express');
+const respuesta = require('../../red/respuestas');
+const controlador = require('./controlador');
+
 const router = express.Router();
 
 // Definir las rutas
-router.get('/', function (req, res) {
-  res.send('Lista de clientes');
+router.get('/', async function (req, res) {
+  try {
+    const todos = await controlador.todos(); 
+    respuesta.success(req, res, todos, 200);
+  } catch (error) {
+    respuesta.error(req, res, 'Error al obtener los datos', 500); 
+  }
 });
 
-// Exportar el router para poder utilizarlo en otros archivos
+
 module.exports = router;
