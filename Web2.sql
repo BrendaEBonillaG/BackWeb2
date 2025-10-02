@@ -4,6 +4,8 @@ USE Web2;
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Admin';
 FLUSH PRIVILEGES;
 
+SELECT * FROM Usuario;
+
 -- Tabla de usuarios
 CREATE TABLE Usuario(
   IDUsuario INT AUTO_INCREMENT PRIMARY KEY,
@@ -15,6 +17,11 @@ CREATE TABLE Usuario(
   Foto VARCHAR(255) NULL, -- ruta o URL de la foto
   Activo TINYINT(1) NOT NULL DEFAULT 1 -- 1 = activo, 0 = inactivo
 );
+
+INSERT INTO Usuario (Usuario, Nombre, Correo, Telefono, Password, Foto, Activo)
+VALUES 
+('testUser', 'Juan Pérez', 'juan.perez@example.com', '123456789', 'hashed_password_example', NULL, 1);
+
 
 -- Tabla de servicios (pre-cargados)
 CREATE TABLE Servicios (
