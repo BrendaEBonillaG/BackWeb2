@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/',todos);
 router.get('/:id', uno);
-
+router.post('/', agregar);
 router.put('/', eliminar);
 
 // Definir las rutas
@@ -28,6 +28,19 @@ async function uno (req, res, next) {
   }
 };
 
+async function agregar (req, res, next) {
+  try {
+    const todos = await controlador.agregar(req.body); 
+    if(req.body.IDUsuario == 0){
+      mensaje = 'item agregado satisfactoriamente';
+    }else{
+      mensaje = 'item modificado satisfactoriamente';
+    }
+    respuesta.success(req, res, mensaje, 201);
+  } catch (error) {
+    next(err);
+  }
+};
 
 async function eliminar (req, res, next) {
   try {

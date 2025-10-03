@@ -53,8 +53,25 @@ function uno(tabla, id) {
 }
 
 function agregar(tabla, data){
+    if(data && data.IDUsuario == 0){
+        return insertar(tabla, data);
+    }else{
+        return actualizar(tabla, data);
+    }
+}
+
+function insertar(tabla, data){
     return new Promise((resolve, reject) => {
         const query = `INSERT INTO ?? SET ?`; 
+        conexion.query(query, [tabla, data], (error, results) => {
+            if(error) return reject(error);
+            resolve(results);
+        });
+    });
+}
+function actualizar(tabla, data){
+    return new Promise((resolve, reject) => {
+        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`; 
         conexion.query(query, [tabla, data], (error, results) => {
             if(error) return reject(error);
             resolve(results);
