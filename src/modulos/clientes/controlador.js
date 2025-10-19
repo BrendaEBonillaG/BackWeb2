@@ -15,7 +15,7 @@ function agregar (body){
 }
 
 function eliminar (body){
-    return db.eliminar(TABLA, body);
+    return db.eliminar(TABLA, body.id);
 }
 
 module.exports = {

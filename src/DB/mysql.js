@@ -81,7 +81,7 @@ function actualizar(tabla, data){
 
 function eliminar(tabla, id) {
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM ?? WHERE IDUsuario = ?`; // Corrigido
+        const query = `DELETE FROM ?? WHERE IDUsuario = ?`;
         conexion.query(query, [tabla, id], (error, results) => {
             if (error) return reject(error);
             resolve(results);

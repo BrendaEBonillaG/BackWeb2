@@ -44,10 +44,16 @@ async function agregar (req, res, next) {
 
 async function eliminar (req, res, next) {
   try {
-    const todos = await controlador.eliminar(req.body); 
-    respuesta.success(req, res, 'item eliminado satisfactoriamente', 200);
+    const resultado = await controlador.eliminar(req.body); 
+    
+    if (resultado.affectedRows === 0) {
+      respuesta.success(req, res, 'El registro ya estaba eliminado o no existe', 200);
+    } else {
+      respuesta.success(req, res, 'Item eliminado satisfactoriamente', 200);
+    }
+    
   } catch (error) {
-    next(err);
+    next(error);
   }
 };
 
