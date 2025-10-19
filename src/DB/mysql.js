@@ -38,24 +38,29 @@ function todos(tabla){
     return new Promise((resolve, reject) => {
         const query = `SELECT * FROM ??`; 
         conexion.query(query, [tabla], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
+            return error ? reject(error) : resolve(results);
         });
     });
 }
 
 function uno(tabla, id) {
-
     return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ?? WHERE id = ?`; 
+        const query = `SELECT * FROM ?? WHERE IDUsuario = ?`; 
         conexion.query(query, [tabla, id], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
+            return error ? reject(error) : resolve(results);
         });
     });
 }
 
 function agregar(tabla, data){
+    if(data && parseInt(data.IDUsuario) === 0){
+        return insertar(tabla, data);
+    }else{
+        return actualizar(tabla, data);
+    }
+}
+
+function insertar(tabla, data){
     return new Promise((resolve, reject) => {
         const query = `INSERT INTO ?? SET ?`; 
         conexion.query(query, [tabla, data], (error, results) => {
@@ -64,12 +69,20 @@ function agregar(tabla, data){
         });
     });
 }
-
-function eliminar(tabla, id){
+function actualizar(tabla, data){
     return new Promise((resolve, reject) => {
-        const query = `DELETE FROM ?? WHERE id = ?`; 
-        conexion.query(query, [tabla, id], (error, results) => {
+        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`;
+        conexion.query(query, [tabla, data, data.IDUsuario], (error, results) => {
             if(error) return reject(error);
+            resolve(results);
+        });
+    });
+}
+function eliminar(tabla, id) {
+    return new Promise((resolve, reject) => {
+        const query = `DELETE FROM ?? WHERE IDUsuario = ?`;
+        conexion.query(query, [tabla, id], (error, results) => {
+            if (error) return reject(error);
             resolve(results);
         });
     });
