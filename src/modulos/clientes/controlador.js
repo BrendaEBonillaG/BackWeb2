@@ -1,8 +1,13 @@
-const db =  require('../../DB/mysql');
-
 const TABLA = 'Usuario';
 
-function todos (){
+module.exports = function (dbinyectada) {
+
+    let db =dbinyectada;
+
+    if(!db){
+        db = require('../../DB/mysql');
+    }
+    function todos (){
     return db.todos(TABLA);
 }
 
@@ -18,9 +23,10 @@ function eliminar (body){
     return db.eliminar(TABLA, body.id);
 }
 
-module.exports = {
+return {
     todos,
     uno,
     agregar,
     eliminar
+}
 }
