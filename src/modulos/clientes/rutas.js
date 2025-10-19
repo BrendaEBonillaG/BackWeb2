@@ -38,7 +38,7 @@ async function agregar (req, res, next) {
     }
     respuesta.success(req, res, mensaje, 201);
   } catch (error) {
-    next(err);
+    next(error);
   }
 };
 
