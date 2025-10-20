@@ -1,32 +1,55 @@
+const auth = require('../auth');
 const TABLA = 'Usuario';
 
 module.exports = function (dbinyectada) {
-
-    let db =dbinyectada;
-
+    let db = dbinyectada;
     if(!db){
         db = require('../../DB/mysql');
     }
+
     function todos (){
-    return db.todos(TABLA);
-}
+        return db.todos(TABLA);
+    }
 
-function uno (id){
-    return db.uno(TABLA, id);
-}
+    function uno (id){
+        return db.uno(TABLA, id);
+    }
 
-function agregar (body){
-    return db.agregar(TABLA, body);
-}
+    async function agregar (body){
+        const usuario = {
+            Nombre: body.Nombre,
+            Correo: body.Correo,
+            Telefono: body.Telefono,
+            Foto: body.Foto,
+            Activo: body.Activo
+        }
+        
+        if(body.IDUsuario && body.IDUsuario > 0){
+            usuario.IDUsuario = body.IDUsuario;
+        }
+        
+        const respuesta = await db.agregar(TABLA, usuario);
+        const insertId = (body.IDUsuario && body.IDUsuario > 0) ? body.IDUsuario : respuesta.insertId;
 
-function eliminar (body){
-    return db.eliminar(TABLA, body.id);
-}
+        if(body.Usuario || body.Password){
+            await auth.agregar({
+                id: insertId,
+                usuario: body.Usuario,
+                password: body.Password
+            });
+        }
 
-return {
-    todos,
-    uno,
-    agregar,
-    eliminar
-}
+        return respuesta;
+    }
+
+    function eliminar (body){
+        return db.eliminar(TABLA, body.IDUsuario);
+    }
+
+    return {
+        todos,
+        uno,
+        agregar,
+        eliminar
+    }
 }

@@ -53,10 +53,10 @@ function uno(tabla, id) {
 }
 
 function agregar(tabla, data){
-    if(data && parseInt(data.IDUsuario) === 0){
-        return insertar(tabla, data);
-    }else{
+    if(data && data.IDUsuario){
         return actualizar(tabla, data);
+    }else{
+        return insertar(tabla, data);
     }
 }
 
@@ -69,9 +69,10 @@ function insertar(tabla, data){
         });
     });
 }
+
 function actualizar(tabla, data){
     return new Promise((resolve, reject) => {
-        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`;
+        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`; 
         conexion.query(query, [tabla, data, data.IDUsuario], (error, results) => {
             if(error) return reject(error);
             resolve(results);

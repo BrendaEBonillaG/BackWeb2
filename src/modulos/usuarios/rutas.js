@@ -12,25 +12,26 @@ router.put('/', eliminar);
 // Definir las rutas
 async function todos (req, res, next) {
   try {
-    const todos = await controlador.todos(); 
-    respuesta.success(req, res, todos, 200);
+    const items = await controlador.todos(); 
+    respuesta.success(req, res, items, 200);
   } catch (error) {
-    next(err);
+    next(error); // ← CORREGIDO
   }
 };
 
 async function uno (req, res, next) {
   try {
-    const todos = await controlador.uno(req.params.id); 
-    respuesta.success(req, res, todos, 200);
+    const item = await controlador.uno(req.params.id); 
+    respuesta.success(req, res, item, 200);
   } catch (error) {
-    next(err); 
+    next(error); // ← CORREGIDO
   }
 };
 
 async function agregar (req, res, next) {
   try {
-    const todos = await controlador.agregar(req.body); 
+    const resultado = await controlador.agregar(req.body); 
+    let mensaje = ''; // ← Agrega 'let' aquí
     if(req.body.IDUsuario == 0){
       mensaje = 'item agregado satisfactoriamente';
     }else{
