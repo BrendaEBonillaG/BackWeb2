@@ -1,6 +1,7 @@
 const auth = require('.');
 
 const TABLA = 'Auth';
+const bcrypt = require('bcrypt');
 
 module.exports = function (dbinyectada) {
 
@@ -10,7 +11,7 @@ module.exports = function (dbinyectada) {
         db = require('../../DB/mysql');
     }
   
-    function agregar(data) {
+    async function agregar(data) {
         const authData = {
             IDAuth: data.id,
         }
@@ -18,7 +19,7 @@ module.exports = function (dbinyectada) {
             authData.Usuario = data.usuario;
         }
         if(data.password){
-            authData.Password = data.password;
+            authData.Password = await bcrypt.hash(data.password.toString(), 5);
         }
 
         return db.agregar(TABLA, authData);
