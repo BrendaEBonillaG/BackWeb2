@@ -89,9 +89,20 @@ function eliminar(tabla, id) {
     });
 }
 
+function query(tabla, where) {
+    return new Promise((resolve, reject) => {
+        const query = `SELECT * FROM ?? WHERE ?`;
+        conexion.query(query, [tabla, where], (error, results) => {
+            return error ? reject(error) : resolve(results[0]);
+        });
+    });
+}
+
+
 module.exports = {
     todos,
     uno,
     agregar,
-    eliminar
+    eliminar,
+    query
 };
