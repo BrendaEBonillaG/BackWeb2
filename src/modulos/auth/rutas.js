@@ -4,20 +4,17 @@ const controlador = require('./index');
 
 const router = express.Router();
 
-router.get('/login', login);
+// Cambia a POST para login
+router.post('/login', login);
 
-
-
-async function login (req, res, next) {
+async function login(req, res, next) {
   try {
-    const item = await controlador.login(req.params.usuario, req.params.password); 
-    respuesta.success(req, res, item, 200);
+    const { Usuario, Password } = req.body;
+    const token = await controlador.login(Usuario, Password);
+    respuesta.success(req, res, token, 200);
   } catch (error) {
-    next(error); // ← CORREGIDO
+    next(error);
   }
 };
-
-
-
 
 module.exports = router;

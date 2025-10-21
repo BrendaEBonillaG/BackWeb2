@@ -10,32 +10,35 @@ module.exports = function (dbinyectada) {
     }
 
     async function login(usuario, password) {
-        const data = await db.query(TABLA, {Usuario: usuario});
-        
-        // Verificar si se encontró el usuario
-        if (!data) {
+        console.log('Usuario recibido:', usuario);
+        console.log('Buscando en tabla:', TABLA);
+
+        const data = await db.query(TABLA, { Usuario: usuario });
+        console.log('Datos encontrados:', data);
+
+        if (!data || Object.keys(data).length === 0) {
+            console.log('No se encontró usuario con:', usuario);
             throw new Error('Usuario no encontrado');
         }
-        
-        return bcrypt.compare(password, data.Password)
-        .then(resultado => {
-            if (resultado === true) {
-                // Generar token
-                return auth.asignarToken({...data});
-            } else {
-                throw new Error('Contraseña incorrecta');
-            }
-        });
-    }
 
+        console.log('Password en DB:', data.Password);
+        const resultado = await bcrypt.compare(password, data.Password);
+        console.log('Resultado de bcrypt:', resultado);
+
+        if (resultado === true) {
+            return auth.asignarToken({ ...data });
+        } else {
+            throw new Error('Contraseña incorrecta');
+        }
+    }
     async function agregar(data) {
         const authData = {
             IDAuth: data.id,
         }
-        if(data.usuario){
+        if (data.usuario) {
             authData.Usuario = data.usuario;
         }
-        if(data.password){
+        if (data.password) {
             authData.Password = await bcrypt.hash(data.password.toString(), 5);
         }
 
@@ -44,6 +47,6 @@ module.exports = function (dbinyectada) {
 
     return {
         agregar,
-        login 
+        login
     };
 }

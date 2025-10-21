@@ -16,6 +16,12 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use((req, res, next) => {
+    console.log('Body recibido:', req.body);
+    console.log('Headers:', req.headers['content-type']);
+    next();
+});
+
 // Configuración
 app.set('port', config.app.port);
 
