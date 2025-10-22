@@ -1,13 +1,14 @@
 const express = require('express');
 const respuesta = require('../../red/respuestas');
 const controlador = require('./index');
+const seguridad = require('./seguridad');
 
 const router = express.Router();
 
 router.get('/',todos);
 router.get('/:id', uno);
-router.post('/', agregar);
-router.put('/', eliminar);
+router.post('/', seguridad(), agregar);
+router.put('/', seguridad(), eliminar);
 
 // Definir las rutas
 async function todos (req, res, next) {

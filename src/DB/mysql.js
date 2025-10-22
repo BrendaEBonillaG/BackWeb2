@@ -53,7 +53,18 @@ function uno(tabla, id) {
 }
 
 function agregar(tabla, data){
-    if(data && data.IDUsuario){
+    // Para la tabla Auth, usar ON DUPLICATE KEY UPDATE
+    if(tabla === 'Auth') {
+        return new Promise((resolve, reject) => {
+            const query = `INSERT INTO ?? SET ? ON DUPLICATE KEY UPDATE ?`;
+            conexion.query(query, [tabla, data, data], (error, results) => {
+                if(error) return reject(error);
+                resolve(results);
+            });
+        });
+    }
+    // Para otras tablas, usar la lógica normal
+    else if(data && data.IDUsuario){
         return actualizar(tabla, data);
     }else{
         return insertar(tabla, data);

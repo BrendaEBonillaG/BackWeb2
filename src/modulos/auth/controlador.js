@@ -32,18 +32,20 @@ module.exports = function (dbinyectada) {
         }
     }
     async function agregar(data) {
-        const authData = {
-            IDAuth: data.id,
-        }
-        if (data.usuario) {
-            authData.Usuario = data.usuario;
-        }
-        if (data.password) {
-            authData.Password = await bcrypt.hash(data.password.toString(), 5);
-        }
-
-        return db.agregar(TABLA, authData);
+    const authData = {
+        IDAuth: data.id,
     }
+    if (data.usuario) {
+        authData.Usuario = data.usuario;
+    }
+    if (data.password) {
+        authData.Password = await bcrypt.hash(data.password.toString(), 5);
+    }
+
+    // Usar la función agregar normal del db
+    return await db.agregar(TABLA, authData);
+}
+
 
     return {
         agregar,
