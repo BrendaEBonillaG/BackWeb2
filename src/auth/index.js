@@ -12,9 +12,23 @@ function verificarToken(token) {
 }
 
 const chequearAuthToken = {
-    confirmarToken: function (req) {
+    confirmarToken: function (req, id) {
         const decodificado = decodificarCabecera(req);
-       
+        
+        console.log('=== VERIFICANDO AUTORIZACIÓN ===');
+        console.log('ID del token:', decodificado.IDAuth); // ← Cambiado a IDAuth
+        console.log('ID a modificar:', id);
+        console.log('Datos completos del token:', decodificado);
+
+        // Convierte ambos a número para comparar correctamente
+        const tokenId = parseInt(decodificado.IDAuth);
+        const targetId = parseInt(id);
+        
+        if(tokenId !== targetId){
+            throw new Error("No estas autorizado para hacer esto");
+        }
+        
+        console.log('✅ Autorización verificada correctamente');
     }
 }
 

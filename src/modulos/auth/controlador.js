@@ -31,21 +31,34 @@ module.exports = function (dbinyectada) {
             throw new Error('Contraseña incorrecta');
         }
     }
-    async function agregar(data) {
-    const authData = {
-        IDAuth: data.id,
-    }
-    if (data.usuario) {
-        authData.Usuario = data.usuario;
-    }
-    if (data.password) {
-        authData.Password = await bcrypt.hash(data.password.toString(), 5);
-    }
+      async function agregar(data) {
+        try {
+            console.log('Datos recibidos en auth.agregar:', data);
+            
+            if (!data.password) {
+                throw new Error('El campo Password es requerido');
+            }
 
-    // Usar la función agregar normal del db
-    return await db.agregar(TABLA, authData);
-}
+            const authData = {
+                IDAuth: data.id,
+            }
+            if (data.usuario) {
+                authData.Usuario = data.usuario;
+            }
+            if (data.password) {
+                authData.Password = await bcrypt.hash(data.password.toString(), 5);
+            }
 
+            console.log('AuthData a guardar:', authData);
+            const resultado = await db.agregar(TABLA, authData);
+            console.log('Resultado de db.agregar:', resultado);
+            
+            return resultado;
+        } catch (error) {
+            console.log('ERROR COMPLETO en auth.agregar:', error);
+            throw error;
+        }
+    }
 
     return {
         agregar,
