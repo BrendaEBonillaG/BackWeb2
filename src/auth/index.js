@@ -20,7 +20,7 @@ const chequearAuthToken = {
         const targetId = parseInt(id);
         
         if(tokenId !== targetId){
-            throw error ("No estas autorizado para hacer esto", 401);
+            throw error("No estas autorizado para hacer esto", 401);
         }
         
     }

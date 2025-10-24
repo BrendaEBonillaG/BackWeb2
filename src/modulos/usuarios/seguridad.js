@@ -1,4 +1,4 @@
-const auth = require('../../auth');
+const auth = require('../auth');
 
 module.exports = function chequearAuth() {
     function middleware(req, res, next) {
@@ -7,10 +7,18 @@ module.exports = function chequearAuth() {
         console.log('IDUsuario:', req.body.IDUsuario);
         console.log('Headers:', req.headers);
         
-        const id = req.body.IDUsuario; // ← Cambia req.body.id por req.body.IDUsuario
+        const id = req.body.IDUsuario; 
+        
+        // ✅ PERMITIR CREACIÓN DE USUARIOS SIN AUTENTICACIÓN
+        if (!id || id === 0) {
+            console.log('Creación de nuevo usuario - permitido sin autenticación');
+            return next();
+        }
+        
+        // ✅ SOLO APLICAR AUTENTICACIÓN PARA ACTUALIZAR/ELIMINAR USUARIOS EXISTENTES
         try {
             auth.chequearAuthToken.confirmarToken(req, id);
-            console.log('Autorización exitosa');
+            console.log('Autorización exitosa para usuario existente');
             next();
         } catch (error) {
             console.log('Error de autorización:', error.message);
