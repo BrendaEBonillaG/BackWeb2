@@ -14,10 +14,10 @@
 -Json Web Token
 
 
-##Descripción de la Aplicación
+## Descripción de la Aplicación
 Backend desarrollado con Node.js, Express y MySQL que proporciona una API REST completa para la gestión de usuarios. Incluye autenticación, CRUD de usuarios y manejo de sesiones con arquitectura modular y escalable.
 
-##Características Principales
+## Características Principales
 API RESTful con endpoints para usuarios y autenticación
 
 Base de datos MySQL con tablas normalizadas
