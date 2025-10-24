@@ -1,6 +1,6 @@
 const express = require('express');
 const respuesta = require('../../red/respuestas');
-const controlador = require('./controlador');
+const controlador = require('./index');
 
 const router = express.Router();
 
@@ -11,6 +11,8 @@ router.put('/', eliminar);
 
 // Definir las rutas
 async function todos (req, res, next) {
+
+  //mover al conrtrolador
   try {
     const todos = await controlador.todos(); 
     respuesta.success(req, res, todos, 200);

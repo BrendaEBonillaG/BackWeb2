@@ -53,10 +53,21 @@ function uno(tabla, id) {
 }
 
 function agregar(tabla, data){
-    if(data && parseInt(data.IDUsuario) === 0){
-        return insertar(tabla, data);
-    }else{
+    // Para la tabla Auth, usar ON DUPLICATE KEY UPDATE
+    if(tabla === 'Auth') {
+        return new Promise((resolve, reject) => {
+            const query = `INSERT INTO ?? SET ? ON DUPLICATE KEY UPDATE ?`;
+            conexion.query(query, [tabla, data, data], (error, results) => {
+                if(error) return reject(error);
+                resolve(results);
+            });
+        });
+    }
+    // Para otras tablas, usar la lógica normal
+    else if(data && data.IDUsuario){
         return actualizar(tabla, data);
+    }else{
+        return insertar(tabla, data);
     }
 }
 
@@ -69,9 +80,10 @@ function insertar(tabla, data){
         });
     });
 }
+
 function actualizar(tabla, data){
     return new Promise((resolve, reject) => {
-        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`;
+        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`; 
         conexion.query(query, [tabla, data, data.IDUsuario], (error, results) => {
             if(error) return reject(error);
             resolve(results);
@@ -88,9 +100,20 @@ function eliminar(tabla, id) {
     });
 }
 
+function query(tabla, where) {
+    return new Promise((resolve, reject) => {
+        const query = `SELECT * FROM ?? WHERE ?`;
+        conexion.query(query, [tabla, where], (error, results) => {
+            return error ? reject(error) : resolve(results[0]);
+        });
+    });
+}
+
+
 module.exports = {
     todos,
     uno,
     agregar,
-    eliminar
+    eliminar,
+    query
 };

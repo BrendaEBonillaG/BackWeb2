@@ -5,23 +5,28 @@ ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Admin';
 FLUSH PRIVILEGES;
 
 SELECT * FROM Usuario;
+SELECT * FROM Auth;
+DESCRIBE Usuario;
+DROP DATABASE web2;
+
+TRUNCATE TABLE Usuario;
+TRUNCATE TABLE Auth;
 
 -- Tabla de usuarios
 CREATE TABLE Usuario(
   IDUsuario INT AUTO_INCREMENT PRIMARY KEY,
-  Usuario VARCHAR(30) NOT NULL,
   Nombre VARCHAR(100) NOT NULL,
   Correo VARCHAR(100) NOT NULL UNIQUE,
   Telefono VARCHAR(20) NOT NULL,
-  Password VARCHAR(255) NOT NULL, -- mejor para hash
   Foto VARCHAR(255) NULL, -- ruta o URL de la foto
   Activo TINYINT(1) NOT NULL DEFAULT 1 -- 1 = activo, 0 = inactivo
 );
 
-INSERT INTO Usuario (Usuario, Nombre, Correo, Telefono, Password, Foto, Activo)
-VALUES 
-('testUser', 'Juan Pérez', 'juan.perez@example.com', '123456789', 'hashed_password_example', NULL, 1);
-
+CREATE TABLE Auth(
+IDAuth INT PRIMARY KEY,
+Usuario VARCHAR(30) NOT NULL,
+Password VARCHAR(255) NOT NULL -- mejor para hash
+);
 
 -- Tabla de servicios (pre-cargados)
 CREATE TABLE Servicios (
