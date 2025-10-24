@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const error = require('../middleware/errors');
 
 const secret = config.jwt.secret;
 
@@ -14,31 +15,24 @@ function verificarToken(token) {
 const chequearAuthToken = {
     confirmarToken: function (req, id) {
         const decodificado = decodificarCabecera(req);
-        
-        console.log('=== VERIFICANDO AUTORIZACIÓN ===');
-        console.log('ID del token:', decodificado.IDAuth); // ← Cambiado a IDAuth
-        console.log('ID a modificar:', id);
-        console.log('Datos completos del token:', decodificado);
-
         // Convierte ambos a número para comparar correctamente
         const tokenId = parseInt(decodificado.IDAuth);
         const targetId = parseInt(id);
         
         if(tokenId !== targetId){
-            throw new Error("No estas autorizado para hacer esto");
+            throw error ("No estas autorizado para hacer esto", 401);
         }
         
-        console.log('✅ Autorización verificada correctamente');
     }
 }
 
 function obtenerToken(autorizacion) {
     if (!autorizacion) {
-        throw new Error('No viene token');
+        throw error('No viene token', 401);
     }
 
     if (autorizacion.indexOf('Bearer') === -1) {
-        throw new Error('Formato invalido');
+        throw error('Formato invalido', 401);
     }
 
     let token = autorizacion.replace('Bearer ', '')

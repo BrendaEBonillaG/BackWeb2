@@ -10,10 +10,10 @@ module.exports = function chequearAuth() {
         const id = req.body.IDUsuario; // ← Cambia req.body.id por req.body.IDUsuario
         try {
             auth.chequearAuthToken.confirmarToken(req, id);
-            console.log('✅ Autorización exitosa');
+            console.log('Autorización exitosa');
             next();
         } catch (error) {
-            console.log('❌ Error de autorización:', error.message);
+            console.log('Error de autorización:', error.message);
             res.status(401).json({ error: error.message });
         }
     }
