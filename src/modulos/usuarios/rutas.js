@@ -10,7 +10,6 @@ router.get('/:id', uno);
 router.post('/', seguridad(), agregar);
 router.put('/', seguridad(), eliminar);
 
-// Rutas limpias - sin try-catch
 async function todos(req, res, next) {
     const items = await controlador.todos();
     respuesta.success(req, res, items, 200);
