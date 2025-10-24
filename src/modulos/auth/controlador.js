@@ -12,21 +12,17 @@ module.exports = function (dbinyectada) {
     async function login(body) {
         try {
             const { Usuario, Password } = body;
-            
-            // Validaciones
+
             if (!Usuario || !Password) {
                 throw new Error('Usuario y Password son requeridos');
             }
 
-
             const data = await db.query(TABLA, { Usuario: Usuario });
          
-
             if (!data || Object.keys(data).length === 0) {
                 throw new Error('Usuario no encontrado');
             }
 
-           
             const resultado = await bcrypt.compare(Password, data.Password);
            
 
@@ -49,8 +45,7 @@ module.exports = function (dbinyectada) {
 
     async function agregar(data) {
         try {
-            
-            // Validaciones
+
             if (!data.id) {
                 throw new Error('ID es requerido');
             }
@@ -69,11 +64,8 @@ module.exports = function (dbinyectada) {
             if (data.password) {
                 authData.Password = await bcrypt.hash(data.password.toString(), 5);
             }
-
-          
             const resultado = await db.agregar(TABLA, authData);
-     
-            
+    
             return resultado;
         } catch (error) {
             throw new Error(`Error al crear credenciales: ${error.message}`);

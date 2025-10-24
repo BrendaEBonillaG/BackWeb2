@@ -13,7 +13,7 @@ module.exports = function (dbinyectada) {
             const usuarios = await db.todos(TABLA);
             return usuarios;
         } catch (err) {
-            throw error(`Error al obtener todos los usuarios: ${err.message}`, 500); // ← Cambiado a err.message
+            throw error(`Error al obtener todos los usuarios: ${err.message}`, 500); 
         }
     }
 
@@ -31,7 +31,7 @@ module.exports = function (dbinyectada) {
             
             return usuario;
         } catch (err) {
-            throw error(`Error al obtener usuario con ID ${id}: ${err.message}`, 400); // ← Cambiado a err.message
+            throw error(`Error al obtener usuario con ID ${id}: ${err.message}`, 400); 
         }
     }
 
@@ -69,7 +69,6 @@ module.exports = function (dbinyectada) {
             const insertId = (body.IDUsuario && body.IDUsuario > 0) ? 
                 body.IDUsuario : respuesta.insertId;
 
-            // Manejar autenticación si se proporciona usuario o password
             if (body.Usuario || body.Password) {
                 try {
                     await auth.agregar({
@@ -84,7 +83,7 @@ module.exports = function (dbinyectada) {
 
             return respuesta;
         } catch (err) {
-            throw error(`Error al procesar usuario: ${err.message}`, 400); // ← Cambiado a err.message
+            throw error(`Error al procesar usuario: ${err.message}`, 400); 
         }
     }
 
@@ -97,7 +96,7 @@ module.exports = function (dbinyectada) {
             const resultado = await db.eliminar(TABLA, body.IDUsuario);
             return resultado;
         } catch (err) {
-            throw error(`Error al eliminar usuario: ${err.message}`, 400); // ← Cambiado a err.message
+            throw error(`Error al eliminar usuario: ${err.message}`, 400); 
         }
     }
 

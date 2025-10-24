@@ -53,7 +53,6 @@ function uno(tabla, id) {
 }
 
 function agregar(tabla, data){
-    // Para la tabla Auth, usar ON DUPLICATE KEY UPDATE
     if(tabla === 'Auth') {
         return new Promise((resolve, reject) => {
             const query = `INSERT INTO ?? SET ? ON DUPLICATE KEY UPDATE ?`;
@@ -63,7 +62,6 @@ function agregar(tabla, data){
             });
         });
     }
-    // Para otras tablas, usar la lógica normal
     else if(data && data.IDUsuario){
         return actualizar(tabla, data);
     }else{

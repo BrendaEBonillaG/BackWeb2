@@ -8,4 +8,4 @@ function error(message, code) {
     return e;
 }
 
-module.exports = error;  // ← Exporta la función DIRECTAMENTE, no como objeto
+module.exports = error;  

@@ -15,7 +15,6 @@ function verificarToken(token) {
 const chequearAuthToken = {
     confirmarToken: function (req, id) {
         const decodificado = decodificarCabecera(req);
-        // Convierte ambos a número para comparar correctamente
         const tokenId = parseInt(decodificado.IDAuth);
         const targetId = parseInt(id);
         
