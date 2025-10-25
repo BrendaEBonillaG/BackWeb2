@@ -1,6 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors'); // ← npm install cors
+const cors = require('cors'); 
 const config = require('./config');
 
 const clientes = require('./modulos/clientes/rutas');
@@ -11,7 +11,6 @@ const error = require('./red/errors');
 
 const app = express();
 
-// 🔧 CONFIGURAR CORS CON PAQUETE
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
