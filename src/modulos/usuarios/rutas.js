@@ -5,58 +5,35 @@ const seguridad = require('./seguridad');
 
 const router = express.Router();
 
-router.get('/',todos);
+router.get('/', todos);
 router.get('/:id', uno);
 router.post('/', seguridad(), agregar);
 router.put('/', seguridad(), eliminar);
 
-// Definir las rutas
-async function todos (req, res, next) {
-  try {
-    const items = await controlador.todos(); 
+async function todos(req, res, next) {
+    const items = await controlador.todos();
     respuesta.success(req, res, items, 200);
-  } catch (error) {
-    next(error); // ← CORREGIDO
-  }
-};
+}
 
-async function uno (req, res, next) {
-  try {
-    const item = await controlador.uno(req.params.id); 
+async function uno(req, res, next) {
+    const item = await controlador.uno(req.params.id);
     respuesta.success(req, res, item, 200);
-  } catch (error) {
-    next(error); // ← CORREGIDO
-  }
-};
+}
 
-async function agregar (req, res, next) {
-  try {
-    const resultado = await controlador.agregar(req.body); 
-    let mensaje = ''; // ← Agrega 'let' aquí
-    if(req.body.IDUsuario == 0){
-      mensaje = 'item agregado satisfactoriamente';
-    }else{
-      mensaje = 'item modificado satisfactoriamente';
-    }
+async function agregar(req, res, next) {
+    const resultado = await controlador.agregar(req.body);
+    const mensaje = req.body.IDUsuario == 0 ? 
+        'Item agregado satisfactoriamente' : 
+        'Item modificado satisfactoriamente';
     respuesta.success(req, res, mensaje, 201);
-  } catch (error) {
-    next(error);
-  }
-};
+}
 
-async function eliminar (req, res, next) {
-  try {
-    const resultado = await controlador.eliminar(req.body); 
-    
-    if (resultado.affectedRows === 0) {
-      respuesta.success(req, res, 'El registro ya estaba eliminado o no existe', 200);
-    } else {
-      respuesta.success(req, res, 'Item eliminado satisfactoriamente', 200);
-    }
-    
-  } catch (error) {
-    next(error);
-  }
-};
+async function eliminar(req, res, next) {
+    const resultado = await controlador.eliminar(req.body);
+    const mensaje = resultado.affectedRows === 0 ?
+        'El registro ya estaba eliminado o no existe' :
+        'Item eliminado satisfactoriamente';
+    respuesta.success(req, res, mensaje, 200);
+}
 
-module.exports = router;
+module.exports = router; 

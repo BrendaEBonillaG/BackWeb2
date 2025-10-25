@@ -9,54 +9,66 @@ module.exports = function (dbinyectada) {
         db = require('../../DB/mysql');
     }
 
-    async function login(usuario, password) {
-        console.log('Usuario recibido:', usuario);
-        console.log('Buscando en tabla:', TABLA);
+    async function login(body) {
+        try {
+            const { Usuario, Password } = body;
 
-        const data = await db.query(TABLA, { Usuario: usuario });
-        console.log('Datos encontrados:', data);
+            if (!Usuario || !Password) {
+                throw new Error('Usuario y Password son requeridos');
+            }
 
-        if (!data || Object.keys(data).length === 0) {
-            console.log('No se encontró usuario con:', usuario);
-            throw new Error('Usuario no encontrado');
-        }
+            const data = await db.query(TABLA, { Usuario: Usuario });
+         
+            if (!data || Object.keys(data).length === 0) {
+                throw new Error('Usuario no encontrado');
+            }
 
-        console.log('Password en DB:', data.Password);
-        const resultado = await bcrypt.compare(password, data.Password);
-        console.log('Resultado de bcrypt:', resultado);
+            const resultado = await bcrypt.compare(Password, data.Password);
+           
 
-        if (resultado === true) {
-            return auth.asignarToken({ ...data });
-        } else {
-            throw new Error('Contraseña incorrecta');
+            if (resultado === true) {
+                const token = auth.asignarToken({ ...data });
+                return {
+                    token: token,
+                    usuario: {
+                        IDAuth: data.IDAuth,
+                        Usuario: data.Usuario
+                    }
+                };
+            } else {
+                throw new Error('Contraseña incorrecta');
+            }
+        } catch (error) {
+            throw new Error(`Error en login: ${error.message}`);
         }
     }
-      async function agregar(data) {
+
+    async function agregar(data) {
         try {
-            console.log('Datos recibidos en auth.agregar:', data);
-            
+
+            if (!data.id) {
+                throw new Error('ID es requerido');
+            }
             if (!data.password) {
                 throw new Error('El campo Password es requerido');
             }
 
             const authData = {
                 IDAuth: data.id,
-            }
+            };
+            
             if (data.usuario) {
                 authData.Usuario = data.usuario;
             }
+            
             if (data.password) {
                 authData.Password = await bcrypt.hash(data.password.toString(), 5);
             }
-
-            console.log('AuthData a guardar:', authData);
             const resultado = await db.agregar(TABLA, authData);
-            console.log('Resultado de db.agregar:', resultado);
-            
+    
             return resultado;
         } catch (error) {
-            console.log('ERROR COMPLETO en auth.agregar:', error);
-            throw error;
+            throw new Error(`Error al crear credenciales: ${error.message}`);
         }
     }
 
@@ -64,4 +76,4 @@ module.exports = function (dbinyectada) {
         agregar,
         login
     };
-}
+};
