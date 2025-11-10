@@ -28,6 +28,8 @@ Usuario VARCHAR(30) NOT NULL,
 Password VARCHAR(255) NOT NULL -- mejor para hash
 );
 
+SELECT * FROM Servicios;
+
 -- Tabla de servicios (pre-cargados)
 CREATE TABLE Servicios (
   IDServicios INT AUTO_INCREMENT PRIMARY KEY,
@@ -98,3 +100,42 @@ CREATE TABLE Favoritos(
   FOREIGN KEY (UsuarioFK) REFERENCES Usuario(IDUsuario) ON DELETE CASCADE,
   FOREIGN KEY (LugarFK) REFERENCES Lugar(IDLugar) ON DELETE CASCADE
 );
+
+
+-- Servicios básicos de hospedaje
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Wi-Fi Gratuito', '/assets/iconos/wifi.png', 1),
+('Estacionamiento', '/assets/iconos/parking.png', 1),
+('Alberca', '/assets/iconos/pool.png', 1),
+('TV por Cable', '/assets/iconos/tv.png', 1);
+
+-- Servicios de alimentación
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Desayuno Incluido', '/assets/iconos/breakfast.png', 1),
+('Restaurante', '/assets/iconos/restaurant.png', 1),
+('Room Service', '/assets/iconos/room-service.png', 1),
+('Bar', '/assets/iconos/bar.png', 1);
+
+-- Servicios de recreación y wellness
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Gimnasio', '/assets/iconos/gym.png', 1),
+('Spa', '/assets/iconos/spa.png', 1),
+('Jacuzzi', '/assets/iconos/jacuzzi.png', 1),
+('Terraza', '/assets/iconos/terrace.png', 1);
+
+-- Servicios adicionales
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Lavandería', '/assets/iconos/laundry.png', 1),
+('Recepción 24 Horas', '/assets/iconos/reception.png', 1),
+('Traslado Aeropuerto', '/assets/iconos/airport-shuttle.png', 1),
+('Alquiler de Autos', '/assets/iconos/car-rental.png', 1);
+
+-- Servicios para mascotas (comunes en NL)
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Pet Friendly', '/assets/iconos/pet-friendly.png', 1);
+
+-- Servicios de accesibilidad
+INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
+('Acceso para Silla de Ruedas', '/assets/iconos/wheelchair.png', 1),
+('Habitaciones Adaptadas', '/assets/iconos/accessible.png', 1),
+('Ascensor', '/assets/iconos/elevator.png', 1);

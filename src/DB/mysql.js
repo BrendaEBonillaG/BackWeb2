@@ -1,112 +1,196 @@
-const mysql = require('mysql');
-const config = require('../config');
+const { Usuario } = require('./modelos/usuario.js');
+const { Auth } = require('./modelos/auth.js');
+const { Lugar } = require('./modelos/lugar.js');
+const { Servicios } = require('./modelos/servicios.js');
+const { Lugar_Servicio } = require('./modelos/lugarServicio.js');
+const { Fotos } = require('./modelos/fotos.js');
+const { Resenas } = require('./modelos/resenas.js');
+const { Comentarios } = require('./modelos/comentarios.js');
+const { Favoritos } = require('./modelos/favoritos.js');
 
-const dbconfig = {
-    host: config.mysql.host,
-    user: config.mysql.user,
-    password: config.mysql.password,
-    database: config.mysql.database
-}
-
-let conexion;
-
-function conMysql(){
-    conexion = mysql.createConnection(dbconfig);
-
-    conexion.connect((err) => {
-        if(err){
-            console.log('[db err]', err);
-            setTimeout(conMysql, 2000);
-        }else{
-            console.log('DB conectada');
+async function todos(tabla) {
+    try {
+        let modelo;
+        switch(tabla) {
+            case 'Usuario': modelo = Usuario; break;
+            case 'Auth': modelo = Auth; break;
+            case 'Lugar': modelo = Lugar; break;
+            case 'Servicios': modelo = Servicios; break;
+            case 'Lugar_Servicio': modelo = Lugar_Servicio; break;
+            case 'Fotos': modelo = Fotos; break;
+            case 'Resenas': modelo = Resenas; break;
+            case 'Comentarios': modelo = Comentarios; break;
+            case 'Favoritos': modelo = Favoritos; break;
+            default: throw new Error('Tabla no encontrada');
         }
-    });
+        const resultados = await modelo.findAll();
+        return resultados;
+    } catch (error) {
+        throw error;
+    }
+}
 
-    conexion.on('error', err => {
-        console.log('[db err]', err);
-        if(err.code === 'PROTOCOL_CONNECTION_LOST'){
-            conMysql();
-        } else{
-            throw err;
+async function uno(tabla, id) {
+    try {
+        let modelo;
+        let campoId;
+        switch(tabla) {
+            case 'Usuario': 
+                modelo = Usuario; 
+                campoId = 'IDUsuario'; 
+                break;
+            case 'Auth': 
+                modelo = Auth; 
+                campoId = 'IDAuth'; 
+                break;
+            case 'Lugar': 
+                modelo = Lugar; 
+                campoId = 'IDLugar'; 
+                break;
+            case 'Servicios': 
+                modelo = Servicios; 
+                campoId = 'IDServicios'; 
+                break;
+            case 'Lugar_Servicio': 
+                modelo = Lugar_Servicio; 
+                break;
+            case 'Fotos': 
+                modelo = Fotos; 
+                campoId = 'IDFoto'; 
+                break;
+            case 'Resenas': 
+                modelo = Resenas; 
+                campoId = 'IDResenas'; 
+                break;
+            case 'Comentarios': 
+                modelo = Comentarios; 
+                campoId = 'IDComentarios'; 
+                break;
+            case 'Favoritos': 
+                modelo = Favoritos; 
+                campoId = 'IDFavoritos'; 
+                break;
+            default: throw new Error('Tabla no encontrada');
         }
-    });
+
+        let whereClause = {};
+        if (campoId) {
+            whereClause[campoId] = id;
+        }
+
+        const resultado = await modelo.findOne({ where: whereClause });
+        return resultado ? [resultado.dataValues] : [];
+    } catch (error) {
+        throw error;
+    }
 }
 
-conMysql();
+async function agregar(tabla, data) {
+    try {
+        let modelo;
+        switch(tabla) {
+            case 'Usuario': modelo = Usuario; break;
+            case 'Auth': modelo = Auth; break;
+            case 'Lugar': modelo = Lugar; break;
+            case 'Servicios': modelo = Servicios; break;
+            case 'Lugar_Servicio': modelo = Lugar_Servicio; break;
+            case 'Fotos': modelo = Fotos; break;
+            case 'Resenas': modelo = Resenas; break;
+            case 'Comentarios': modelo = Comentarios; break;
+            case 'Favoritos': modelo = Favoritos; break;
+            default: throw new Error('Tabla no encontrada');
+        }
 
-function todos(tabla){
-    return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ??`; 
-        conexion.query(query, [tabla], (error, results) => {
-            return error ? reject(error) : resolve(results);
-        });
-    });
-}
-
-function uno(tabla, id) {
-    return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ?? WHERE IDUsuario = ?`; 
-        conexion.query(query, [tabla, id], (error, results) => {
-            return error ? reject(error) : resolve(results);
-        });
-    });
-}
-
-function agregar(tabla, data){
-    if(tabla === 'Auth') {
-        return new Promise((resolve, reject) => {
-            const query = `INSERT INTO ?? SET ? ON DUPLICATE KEY UPDATE ?`;
-            conexion.query(query, [tabla, data, data], (error, results) => {
-                if(error) return reject(error);
-                resolve(results);
+        if (tabla === 'Auth') {
+            const [resultado, created] = await modelo.upsert(data);
+            return resultado;
+        } else if (data.IDUsuario) {
+            const resultado = await modelo.update(data, { 
+                where: { IDUsuario: data.IDUsuario } 
             });
-        });
+            return resultado;
+        } else {
+            const resultado = await modelo.create(data);
+            return resultado;
+        }
+    } catch (error) {
+        throw error;
     }
-    else if(data && data.IDUsuario){
-        return actualizar(tabla, data);
-    }else{
-        return insertar(tabla, data);
+}
+
+async function eliminar(tabla, id) {
+    try {
+        let modelo;
+        let campoId;
+        switch(tabla) {
+            case 'Usuario': 
+                modelo = Usuario; 
+                campoId = 'IDUsuario'; 
+                break;
+            case 'Auth': 
+                modelo = Auth; 
+                campoId = 'IDAuth'; 
+                break;
+            case 'Lugar': 
+                modelo = Lugar; 
+                campoId = 'IDLugar'; 
+                break;
+            case 'Servicios': 
+                modelo = Servicios; 
+                campoId = 'IDServicios'; 
+                break;
+            case 'Fotos': 
+                modelo = Fotos; 
+                campoId = 'IDFoto'; 
+                break;
+            case 'Resenas': 
+                modelo = Resenas; 
+                campoId = 'IDResenas'; 
+                break;
+            case 'Comentarios': 
+                modelo = Comentarios; 
+                campoId = 'IDComentarios'; 
+                break;
+            case 'Favoritos': 
+                modelo = Favoritos; 
+                campoId = 'IDFavoritos'; 
+                break;
+            default: throw new Error('Tabla no encontrada');
+        }
+
+        let whereClause = {};
+        if (campoId) {
+            whereClause[campoId] = id;
+        }
+
+        const resultado = await modelo.destroy({ where: whereClause });
+        return { affectedRows: resultado };
+    } catch (error) {
+        throw error;
     }
 }
 
-function insertar(tabla, data){
-    return new Promise((resolve, reject) => {
-        const query = `INSERT INTO ?? SET ?`; 
-        conexion.query(query, [tabla, data], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
-        });
-    });
+async function query(tabla, where) {
+    try {
+        let modelo;
+        switch(tabla) {
+            case 'Usuario': modelo = Usuario; break;
+            case 'Auth': modelo = Auth; break;
+            case 'Lugar': modelo = Lugar; break;
+            case 'Servicios': modelo = Servicios; break;
+            case 'Lugar_Servicio': modelo = Lugar_Servicio; break;
+            case 'Fotos': modelo = Fotos; break;
+            case 'Resenas': modelo = Resenas; break;
+            case 'Comentarios': modelo = Comentarios; break;
+            case 'Favoritos': modelo = Favoritos; break;
+            default: throw new Error('Tabla no encontrada');
+        }
+        const resultado = await modelo.findOne({ where: where });
+        return resultado ? resultado.dataValues : null;
+    } catch (error) {
+        throw error;
+    }
 }
-
-function actualizar(tabla, data){
-    return new Promise((resolve, reject) => {
-        const query = `UPDATE ?? SET ? WHERE IDUsuario = ?`; 
-        conexion.query(query, [tabla, data, data.IDUsuario], (error, results) => {
-            if(error) return reject(error);
-            resolve(results);
-        });
-    });
-}
-function eliminar(tabla, id) {
-    return new Promise((resolve, reject) => {
-        const query = `DELETE FROM ?? WHERE IDUsuario = ?`;
-        conexion.query(query, [tabla, id], (error, results) => {
-            if (error) return reject(error);
-            resolve(results);
-        });
-    });
-}
-
-function query(tabla, where) {
-    return new Promise((resolve, reject) => {
-        const query = `SELECT * FROM ?? WHERE ?`;
-        conexion.query(query, [tabla, where], (error, results) => {
-            return error ? reject(error) : resolve(results[0]);
-        });
-    });
-}
-
 
 module.exports = {
     todos,
