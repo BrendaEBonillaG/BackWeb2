@@ -36,4 +36,4 @@ async function eliminar(req, res, next) {
     respuesta.success(req, res, mensaje, 200);
 }
 
-module.exports = router; 
+module.exports = router;

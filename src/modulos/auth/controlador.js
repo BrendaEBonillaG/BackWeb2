@@ -19,7 +19,7 @@ module.exports = function (dbinyectada) {
 
             const data = await db.query(TABLA, { Usuario: Usuario });
          
-            if (!data || Object.keys(data).length === 0) {
+            if (!data) {
                 throw new Error('Usuario no encontrado');
             }
 

@@ -29,7 +29,7 @@ module.exports = function (dbinyectada) {
                 throw error('Usuario no encontrado', 404);
             }
             
-            return usuario;
+            return usuario[0];
         } catch (err) {
             throw error(`Error al obtener usuario con ID ${id}: ${err.message}`, 400); 
         }
@@ -67,7 +67,7 @@ module.exports = function (dbinyectada) {
             
             const respuesta = await db.agregar(TABLA, usuario);
             const insertId = (body.IDUsuario && body.IDUsuario > 0) ? 
-                body.IDUsuario : respuesta.insertId;
+                body.IDUsuario : respuesta.IDUsuario;
 
             if (body.Usuario || body.Password) {
                 try {
@@ -100,7 +100,6 @@ module.exports = function (dbinyectada) {
         }
     }
 
-    // Funciones de validación
     function validarCorreo(correo) {
         const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regexCorreo.test(correo);
