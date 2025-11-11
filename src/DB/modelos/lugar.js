@@ -17,7 +17,7 @@ class Lugar extends Model {}
 Lugar.init({
     IDLugar: {
         type: DataTypes.INTEGER,
-        autoincrement: true,
+        autoIncrement: true,
         primaryKey: true
     },
     Nombre: {

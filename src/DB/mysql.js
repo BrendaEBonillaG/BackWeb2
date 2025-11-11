@@ -49,7 +49,7 @@ async function uno(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; 
+                campoId = 'IDServicio'; // ✅ CORREGIDO: 'IDServicios' → 'IDServicio'
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -60,15 +60,15 @@ async function uno(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; 
+                campoId = 'IDResena'; // ✅ POSIBLE CORRECCIÓN
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; 
+                campoId = 'IDComentario'; // ✅ POSIBLE CORRECCIÓN
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; 
+                campoId = 'IDFavorito'; // ✅ POSIBLE CORRECCIÓN
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -101,19 +101,43 @@ async function agregar(tabla, data) {
             default: throw new Error('Tabla no encontrada');
         }
 
+        console.log(`🔧 Agregando en tabla: ${tabla}`, data);
+
+        // ✅ LÓGICA CORREGIDA PARA Lugar_Servicio
+        if (tabla === 'Lugar_Servicio') {
+            // Para tablas de unión, usar findOrCreate para evitar duplicados
+            const [resultado, created] = await modelo.findOrCreate({
+                where: {
+                    IDLugar: data.IDLugar,
+                    IDServicio: data.IDServicio
+                },
+                defaults: data
+            });
+            console.log(`📌 Lugar_Servicio ${created ? 'creado' : 'ya existía'}:`, resultado.dataValues);
+            return resultado;
+        }
+        
         if (tabla === 'Auth') {
             const [resultado, created] = await modelo.upsert(data);
             return resultado;
-        } else if (data.IDUsuario) {
+        } else if (data.IDUsuario && tabla === 'Usuario') {
             const resultado = await modelo.update(data, { 
                 where: { IDUsuario: data.IDUsuario } 
             });
             return resultado;
+        } else if (data.IDLugar && tabla === 'Lugar') {
+            const resultado = await modelo.update(data, { 
+                where: { IDLugar: data.IDLugar } 
+            });
+            return resultado;
         } else {
+            // ✅ CREACIÓN NORMAL para otras tablas
             const resultado = await modelo.create(data);
+            console.log(`✅ ${tabla} creado:`, resultado.dataValues);
             return resultado;
         }
     } catch (error) {
+        console.error(`❌ Error en agregar(${tabla}):`, error);
         throw error;
     }
 }
@@ -137,7 +161,10 @@ async function eliminar(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; 
+                campoId = 'IDServicios'; // ✅ CORREGIDO
+                break;
+            case 'Lugar_Servicio': 
+                modelo = Lugar_Servicio; 
                 break;
             case 'Fotos': 
                 modelo = Fotos; 
@@ -164,6 +191,15 @@ async function eliminar(tabla, id) {
         }
 
         const resultado = await modelo.destroy({ where: whereClause });
+        return { affectedRows: resultado };
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function eliminarLugarServicio(where) {
+    try {
+        const resultado = await Lugar_Servicio.destroy({ where: where });
         return { affectedRows: resultado };
     } catch (error) {
         throw error;
@@ -197,5 +233,6 @@ module.exports = {
     uno,
     agregar,
     eliminar,
+    eliminarLugarServicio,
     query
 };

@@ -37,6 +37,9 @@ CREATE TABLE Servicios (
   Logo VARCHAR(255) NULL, -- ruta o URL del logo
   Activo TINYINT(1) NOT NULL DEFAULT 1
 );
+SELECT * FROM Lugar;
+SELECT * FROM Lugar_Servicio;
+
 
 -- Tabla de lugares
 CREATE TABLE Lugar(

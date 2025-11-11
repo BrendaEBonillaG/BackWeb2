@@ -1,32 +1,276 @@
 const TABLA = 'Lugar';
 
 module.exports = function (dbinyectada) {
-
-    let db =dbinyectada;
+    let db = dbinyectada;
 
     if(!db){
         db = require('../../DB/mysql');
     }
-    function todos (){
-    return db.todos(TABLA);
-}
 
-function uno (id){
-    return db.uno(TABLA, id);
-}
+    async function todos() {
+        try {
+            const lugares = await db.todos(TABLA);
+            return lugares;
+        } catch (error) {
+            throw new Error(`Error al obtener lugares: ${error.message}`);
+        }
+    }
 
-function agregar (body){
-    return db.agregar(TABLA, body);
-}
+    async function uno(id) {
+        try {
+            if (!id) {
+                throw new Error('ID de lugar es requerido');
+            }
+            
+            const lugar = await db.uno(TABLA, id);
+            
+            if (!lugar || lugar.length === 0) {
+                throw new Error('Lugar no encontrado');
+            }
+            
+            return lugar[0];
+        } catch (error) {
+            throw new Error(`Error al obtener lugar: ${error.message}`);
+        }
+    }
 
-function eliminar (body){
-    return db.eliminar(TABLA, body.id);
-}
+    async function agregar(body) {
+        try {
+            if (!body.Nombre || !body.Direccion || !body.Info || !body.Tipo) {
+                throw new Error('Los campos Nombre, Direccion, Info y Tipo son requeridos');
+            }
 
-return {
-    todos,
-    uno,
-    agregar,
-    eliminar
-}
-}
+            const lugar = {
+                Nombre: body.Nombre.trim(),
+                Direccion: body.Direccion.trim(),
+                Info: body.Info.trim(),
+                Tipo: body.Tipo,
+                Activo: body.Activo !== undefined ? body.Activo : true
+            };
+
+            if (body.IDLugar && body.IDLugar > 0) {
+                lugar.IDLugar = body.IDLugar;
+            }
+
+            console.log('=== INICIANDO CREACIÓN DE LUGAR ===');
+            console.log('Datos del lugar:', lugar);
+            
+            const respuesta = await db.agregar(TABLA, lugar);
+            console.log('Respuesta de base de datos:', respuesta);
+            
+            let insertId;
+            if (body.IDLugar && body.IDLugar > 0) {
+                insertId = body.IDLugar;
+            } else {
+                insertId = respuesta?.IDLugar || respuesta?.dataValues?.IDLugar;
+            }
+
+            console.log('ID del lugar creado:', insertId);
+
+            if (!insertId) {
+                throw new Error('No se pudo obtener el ID del lugar creado');
+            }
+
+            if (body.servicios && Array.isArray(body.servicios)) {
+                console.log('Servicios a agregar:', body.servicios);
+                console.log('Cantidad de servicios:', body.servicios.length);
+                
+                for (const servicioId of body.servicios) {
+                    console.log(`Agregando servicio ID: ${servicioId} al lugar ID: ${insertId}`);
+                    await agregarServicioLugar(insertId, servicioId);
+                }
+                console.log('Todos los servicios agregados correctamente');
+            } else {
+                console.log('No hay servicios para agregar');
+            }
+
+            if (body.fotos && Array.isArray(body.fotos)) {
+                console.log('Fotos a agregar:', body.fotos);
+                for (const fotoUrl of body.fotos) {
+                    await db.agregar('Fotos', {
+                        Foto: fotoUrl,
+                        LugarFK: insertId
+                    });
+                }
+            }
+
+            console.log('=== LUGAR CREADO EXITOSAMENTE ===');
+            return { ...respuesta, IDLugar: insertId };
+        } catch (error) {
+            console.error('Error en agregar lugar:', error);
+            throw new Error(`Error al procesar lugar: ${error.message}`);
+        }
+    }
+
+    async function eliminar(body) {
+        try {
+            if (!body.IDLugar) {
+                throw new Error('ID de lugar es requerido para eliminar');
+            }
+            
+            const resultado = await db.eliminar(TABLA, body.IDLugar);
+            return resultado;
+        } catch (error) {
+            throw new Error(`Error al eliminar lugar: ${error.message}`);
+        }
+    }
+
+    async function porTipo(tipo) {
+        try {
+            if (!tipo) {
+                throw new Error('Tipo es requerido');
+            }
+
+            const lugares = await db.todos(TABLA);
+            const lugaresFiltrados = lugares.filter(lugar => 
+                lugar.Tipo.toLowerCase() === tipo.toLowerCase()
+            );
+            
+            return lugaresFiltrados;
+        } catch (error) {
+            throw new Error(`Error al obtener lugares por tipo: ${error.message}`);
+        }
+    }
+
+    async function porServicios(serviciosIds) {
+        try {
+            if (!serviciosIds || !Array.isArray(serviciosIds) || serviciosIds.length === 0) {
+                throw new Error('Array de IDs de servicios es requerido');
+            }
+
+            const todosLugares = await db.todos(TABLA);
+            const todasRelaciones = await db.todos('Lugar_Servicio');
+            
+            const lugaresConServicios = todosLugares.filter(lugar => {
+                const serviciosDelLugar = todasRelaciones
+                    .filter(rel => rel.IDLugar === lugar.IDLugar)
+                    .map(rel => rel.IDServicio);
+                
+                return serviciosIds.every(servicioId => 
+                    serviciosDelLugar.includes(servicioId)
+                );
+            });
+
+            return lugaresConServicios;
+        } catch (error) {
+            throw new Error(`Error al obtener lugares por servicios: ${error.message}`);
+        }
+    }
+
+    async function agregarServicioLugar(idLugar, idServicio) {
+        try {
+            if (!idLugar || !idServicio) {
+                throw new Error('ID de lugar y ID de servicio son requeridos');
+            }
+
+            const relacion = {
+                IDLugar: parseInt(idLugar),
+                IDServicio: parseInt(idServicio)
+            };
+
+            console.log('Creando relación Lugar-Servicio:', relacion);
+            const resultado = await db.agregar('Lugar_Servicio', relacion);
+            console.log('Relación creada exitosamente:', resultado);
+            
+            return resultado;
+        } catch (error) {
+            console.error('Error en agregarServicioLugar:', error);
+            throw new Error(`Error al agregar servicio al lugar: ${error.message}`);
+        }
+    }
+
+    async function eliminarServicioLugar(idLugar, idServicio) {
+        try {
+            if (!idLugar || !idServicio) {
+                throw new Error('ID de lugar y ID de servicio son requeridos');
+            }
+
+            const resultado = await db.eliminar('Lugar_Servicio', { 
+                IDLugar: idLugar, 
+                IDServicio: idServicio 
+            });
+            return resultado;
+        } catch (error) {
+            throw new Error(`Error al eliminar servicio del lugar: ${error.message}`);
+        }
+    }
+
+    async function obtenerServiciosLugar(idLugar) {
+        try {
+            if (!idLugar) {
+                throw new Error('ID de lugar es requerido');
+            }
+
+            const todosServicios = await db.todos('Servicios');
+            const todasRelaciones = await db.todos('Lugar_Servicio');
+            
+            const serviciosDelLugar = todasRelaciones
+                .filter(rel => rel.IDLugar === idLugar)
+                .map(rel => {
+                    const servicio = todosServicios.find(s => s.IDServicio === rel.IDServicio);
+                    return servicio;
+                })
+                .filter(servicio => servicio !== undefined);
+
+            return serviciosDelLugar;
+        } catch (error) {
+            throw new Error(`Error al obtener servicios del lugar: ${error.message}`);
+        }
+    }
+
+    async function obtenerTodosServicios() {
+        try {
+            const servicios = await db.todos('Servicios');
+            return servicios;
+        } catch (error) {
+            throw new Error(`Error al obtener todos los servicios: ${error.message}`);
+        }
+    }
+
+    async function agregarFotoLugar(idLugar, fotoUrl) {
+        try {
+            if (!idLugar || !fotoUrl) {
+                throw new Error('ID de lugar y URL de foto son requeridos');
+            }
+
+            const foto = {
+                Foto: fotoUrl,
+                LugarFK: idLugar
+            };
+
+            const resultado = await db.agregar('Fotos', foto);
+            return resultado;
+        } catch (error) {
+            throw new Error(`Error al agregar foto al lugar: ${error.message}`);
+        }
+    }
+
+    async function obtenerFotosLugar(idLugar) {
+        try {
+            if (!idLugar) {
+                throw new Error('ID de lugar es requerido');
+            }
+
+            const fotos = await db.todos('Fotos');
+            const fotosDelLugar = fotos.filter(foto => foto.LugarFK === idLugar);
+            return fotosDelLugar;
+        } catch (error) {
+            throw new Error(`Error al obtener fotos del lugar: ${error.message}`);
+        }
+    }
+
+    return {
+        todos,
+        uno,
+        agregar,
+        eliminar,
+        porTipo,
+        porServicios,
+        agregarServicioLugar,
+        eliminarServicioLugar,
+        obtenerServiciosLugar,
+        obtenerTodosServicios,
+        agregarFotoLugar,
+        obtenerFotosLugar
+    };
+};
