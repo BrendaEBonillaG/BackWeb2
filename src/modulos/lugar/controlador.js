@@ -47,12 +47,19 @@ module.exports = function (dbinyectada) {
                 throw new Error('El Tipo solo puede ser "Hospedaje" o "Turismo"');
             }
 
-            // ✅ VALIDACIÓN 2: Si es Turismo, no permitir servicios
+            // ✅ VALIDACIÓN 2: Si es Hospedaje, requerir al menos un servicio
+            if (tipoNormalizado === 'hospedaje') {
+                if (!body.servicios || !Array.isArray(body.servicios) || body.servicios.length === 0) {
+                    throw new Error('Los lugares de tipo "Hospedaje" deben tener al menos un servicio');
+                }
+            }
+
+            // ✅ VALIDACIÓN 3: Si es Turismo, no permitir servicios
             if (tipoNormalizado === 'turismo' && body.servicios && body.servicios.length > 0) {
                 throw new Error('Los lugares de tipo "Turismo" no pueden tener servicios asociados');
             }
 
-            // ✅ VALIDACIÓN 3: Si es Hospedaje, verificar servicios duplicados
+            // ✅ VALIDACIÓN 4: Si es Hospedaje, verificar servicios duplicados
             if (tipoNormalizado === 'hospedaje' && body.servicios && Array.isArray(body.servicios)) {
                 const serviciosUnicos = [...new Set(body.servicios)];
                 if (serviciosUnicos.length !== body.servicios.length) {
