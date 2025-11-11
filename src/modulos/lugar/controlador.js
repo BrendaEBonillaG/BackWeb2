@@ -268,8 +268,13 @@ module.exports = function (dbinyectada) {
                 throw new Error('ID de lugar es requerido');
             }
 
+            console.log('🔍 Obteniendo servicios para lugar ID:', idLugar);
+            
             const todosServicios = await db.todos('Servicios');
+            console.log('📦 Todos los servicios disponibles:', todosServicios?.length || 0);
+            
             const todasRelaciones = await db.todos('Lugar_Servicio');
+            console.log('🔗 Todas las relaciones Lugar_Servicio:', todasRelaciones?.length || 0);
             
             const serviciosDelLugar = todasRelaciones
                 .filter(rel => rel.IDLugar === idLugar)
@@ -279,17 +284,36 @@ module.exports = function (dbinyectada) {
                 })
                 .filter(servicio => servicio !== undefined);
 
+            console.log('✅ Servicios del lugar encontrados:', serviciosDelLugar.length);
+            
             return serviciosDelLugar;
         } catch (error) {
+            console.error('❌ Error en obtenerServiciosLugar:', error);
             throw new Error(`Error al obtener servicios del lugar: ${error.message}`);
         }
     }
 
     async function obtenerTodosServicios() {
         try {
+            console.log('🔍 INICIANDO obtenerTodosServicios...');
+            console.log('📋 Llamando a db.todos("Servicios")');
+            
             const servicios = await db.todos('Servicios');
+            
+            console.log('✅ Servicios obtenidos de la BD:');
+            console.log('   - Tipo:', typeof servicios);
+            console.log('   - Es array?', Array.isArray(servicios));
+            console.log('   - Cantidad:', servicios?.length || 0);
+            
+            if (servicios && servicios.length > 0) {
+                console.log('   - Primer servicio:', servicios[0]);
+            } else {
+                console.log('   - Array vacío o undefined');
+            }
+            
             return servicios;
         } catch (error) {
+            console.error('❌ ERROR en obtenerTodosServicios:', error);
             throw new Error(`Error al obtener todos los servicios: ${error.message}`);
         }
     }

@@ -10,6 +10,8 @@ const { Favoritos } = require('./modelos/favoritos.js');
 
 async function todos(tabla) {
     try {
+        console.log(`🔍 EJECUTANDO todos(${tabla})`);
+        
         let modelo;
         switch(tabla) {
             case 'Usuario': modelo = Usuario; break;
@@ -23,9 +25,20 @@ async function todos(tabla) {
             case 'Favoritos': modelo = Favoritos; break;
             default: throw new Error('Tabla no encontrada');
         }
+        
+        console.log(`📦 Modelo cargado para ${tabla}:`, modelo?.name);
         const resultados = await modelo.findAll();
+        console.log(`✅ ${tabla} - Resultados encontrados:`, resultados?.length || 0);
+        
+        if (resultados && resultados.length > 0) {
+            console.log(`📋 Primer registro de ${tabla}:`, JSON.stringify(resultados[0]?.dataValues, null, 2));
+        } else {
+            console.log(`❌ ${tabla} - NO SE ENCONTRARON REGISTROS`);
+        }
+        
         return resultados;
     } catch (error) {
+        console.error(`❌ ERROR en todos(${tabla}):`, error);
         throw error;
     }
 }
@@ -49,7 +62,7 @@ async function uno(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicio'; // ✅ CORREGIDO: 'IDServicios' → 'IDServicio'
+                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -60,15 +73,15 @@ async function uno(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResena'; // ✅ POSIBLE CORRECCIÓN
+                campoId = 'IDResenas'; // ✅ MANTENIDO (según tu BD)
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentario'; // ✅ POSIBLE CORRECCIÓN
+                campoId = 'IDComentarios'; // ✅ MANTENIDO (según tu BD)
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavorito'; // ✅ POSIBLE CORRECCIÓN
+                campoId = 'IDFavoritos'; // ✅ MANTENIDO (según tu BD)
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -109,7 +122,7 @@ async function agregar(tabla, data) {
             const [resultado, created] = await modelo.findOrCreate({
                 where: {
                     IDLugar: data.IDLugar,
-                    IDServicio: data.IDServicio
+                    IDServicios: data.IDServicios // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
                 },
                 defaults: data
             });
@@ -161,7 +174,7 @@ async function eliminar(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; // ✅ CORREGIDO
+                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -172,15 +185,15 @@ async function eliminar(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; 
+                campoId = 'IDResenas'; // ✅ MANTENIDO
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; 
+                campoId = 'IDComentarios'; // ✅ MANTENIDO
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; 
+                campoId = 'IDFavoritos'; // ✅ MANTENIDO
                 break;
             default: throw new Error('Tabla no encontrada');
         }
