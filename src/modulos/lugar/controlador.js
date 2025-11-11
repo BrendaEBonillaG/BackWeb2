@@ -36,15 +36,49 @@ module.exports = function (dbinyectada) {
 
     async function agregar(body) {
         try {
+            // Validación de campos requeridos
             if (!body.Nombre || !body.Direccion || !body.Info || !body.Tipo) {
                 throw new Error('Los campos Nombre, Direccion, Info y Tipo son requeridos');
+            }
+
+            // ✅ VALIDACIÓN 1: Solo permitir tipos "Hospedaje" o "Turismo"
+            const tipoNormalizado = body.Tipo.trim().toLowerCase();
+            if (tipoNormalizado !== 'hospedaje' && tipoNormalizado !== 'turismo') {
+                throw new Error('El Tipo solo puede ser "Hospedaje" o "Turismo"');
+            }
+
+            // ✅ VALIDACIÓN 2: Si es Turismo, no permitir servicios
+            if (tipoNormalizado === 'turismo' && body.servicios && body.servicios.length > 0) {
+                throw new Error('Los lugares de tipo "Turismo" no pueden tener servicios asociados');
+            }
+
+            // ✅ VALIDACIÓN 3: Si es Hospedaje, verificar servicios duplicados
+            if (tipoNormalizado === 'hospedaje' && body.servicios && Array.isArray(body.servicios)) {
+                const serviciosUnicos = [...new Set(body.servicios)];
+                if (serviciosUnicos.length !== body.servicios.length) {
+                    throw new Error('No se permiten servicios duplicados para un hospedaje');
+                }
+                
+                // Para actualizaciones, verificar duplicados en BD
+                if (body.IDLugar && body.IDLugar > 0) {
+                    const serviciosExistentes = await obtenerServiciosLugar(body.IDLugar);
+                    const serviciosExistentesIds = serviciosExistentes.map(s => s.IDServicio);
+                    
+                    const serviciosDuplicados = body.servicios.filter(servicioId => 
+                        serviciosExistentesIds.includes(servicioId)
+                    );
+                    
+                    if (serviciosDuplicados.length > 0) {
+                        throw new Error(`El hospedaje ya tiene los siguientes servicios: ${serviciosDuplicados.join(', ')}`);
+                    }
+                }
             }
 
             const lugar = {
                 Nombre: body.Nombre.trim(),
                 Direccion: body.Direccion.trim(),
                 Info: body.Info.trim(),
-                Tipo: body.Tipo,
+                Tipo: body.Tipo.trim(), // Normalizar el tipo
                 Activo: body.Activo !== undefined ? body.Activo : true
             };
 
@@ -71,7 +105,8 @@ module.exports = function (dbinyectada) {
                 throw new Error('No se pudo obtener el ID del lugar creado');
             }
 
-            if (body.servicios && Array.isArray(body.servicios)) {
+            // ✅ AGREGAR SERVICIOS SOLO SI ES HOSPEDAJE Y PASÓ VALIDACIONES
+            if (tipoNormalizado === 'hospedaje' && body.servicios && Array.isArray(body.servicios)) {
                 console.log('Servicios a agregar:', body.servicios);
                 console.log('Cantidad de servicios:', body.servicios.length);
                 
@@ -121,9 +156,15 @@ module.exports = function (dbinyectada) {
                 throw new Error('Tipo es requerido');
             }
 
+            // Validar que el tipo sea válido
+            const tipoNormalizado = tipo.toLowerCase();
+            if (tipoNormalizado !== 'hospedaje' && tipoNormalizado !== 'turismo') {
+                throw new Error('El tipo solo puede ser "Hospedaje" o "Turismo"');
+            }
+
             const lugares = await db.todos(TABLA);
             const lugaresFiltrados = lugares.filter(lugar => 
-                lugar.Tipo.toLowerCase() === tipo.toLowerCase()
+                lugar.Tipo.toLowerCase() === tipoNormalizado
             );
             
             return lugaresFiltrados;
@@ -161,6 +202,25 @@ module.exports = function (dbinyectada) {
         try {
             if (!idLugar || !idServicio) {
                 throw new Error('ID de lugar y ID de servicio son requeridos');
+            }
+
+            // ✅ VALIDACIÓN: Verificar que el lugar sea de tipo Hospedaje
+            const lugar = await db.uno(TABLA, idLugar);
+            if (!lugar || lugar.length === 0) {
+                throw new Error('Lugar no encontrado');
+            }
+
+            const tipoLugar = lugar[0].Tipo.toLowerCase();
+            if (tipoLugar !== 'hospedaje') {
+                throw new Error('Solo los lugares de tipo "Hospedaje" pueden tener servicios');
+            }
+
+            // ✅ VALIDACIÓN: Verificar que el servicio no esté duplicado
+            const serviciosExistentes = await obtenerServiciosLugar(idLugar);
+            const servicioDuplicado = serviciosExistentes.find(s => s.IDServicio === idServicio);
+            
+            if (servicioDuplicado) {
+                throw new Error(`El servicio con ID ${idServicio} ya está asignado a este hospedaje`);
             }
 
             const relacion = {
