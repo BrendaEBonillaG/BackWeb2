@@ -122,7 +122,7 @@ async function agregar(tabla, data) {
             const [resultado, created] = await modelo.findOrCreate({
                 where: {
                     IDLugar: data.IDLugar,
-                    IDServicios: data.IDServicios // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
+                    IDServicio: data.IDServicio // ✅ CAMBIADO: data.IDServicios → data.IDServicio
                 },
                 defaults: data
             });

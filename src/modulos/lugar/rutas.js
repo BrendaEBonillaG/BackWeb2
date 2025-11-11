@@ -7,9 +7,7 @@ const router = express.Router();
 router.get('/', todos);
 router.get('/:id', uno);
 router.get('/tipo/:tipo', porTipo);
-// ✅ PRIMERO LA RUTA ESPECÍFICA
 router.get('/servicios/todos', obtenerTodosServicios);
-// ✅ LUEGO LA RUTA CON PARÁMETROS
 router.get('/servicios/:serviciosIds', porServicios);
 router.get('/:id/servicios', obtenerServiciosLugar);
 router.post('/', agregar);
@@ -44,17 +42,12 @@ async function obtenerServiciosLugar(req, res, next) {
 }
 
 async function obtenerTodosServicios(req, res, next) {
-    console.log('🎯🎯🎯 RUTA /servicios/todos INICIADA 🎯🎯🎯');
     
     try {
-        console.log('🔴 ANTES de llamar al controlador...');
-        const servicios = await controlador.obtenerTodosServicios();
-        console.log('🟢 DESPUÉS de llamar al controlador');
-        console.log('✅ RUTA - Servicios obtenidos:', servicios?.length || 0);
-        
+        const servicios = await controlador.obtenerTodosServicios();   
         respuesta.success(req, res, servicios, 200);
     } catch (error) {
-        console.error('❌ RUTA - Error:', error);
+        console.error('RUTA - Error:', error);
         next(error);
     }
 }

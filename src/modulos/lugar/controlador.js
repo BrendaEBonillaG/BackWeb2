@@ -69,7 +69,7 @@ module.exports = function (dbinyectada) {
                 // Para actualizaciones, verificar duplicados en BD
                 if (body.IDLugar && body.IDLugar > 0) {
                     const serviciosExistentes = await obtenerServiciosLugar(body.IDLugar);
-                    const serviciosExistentesIds = serviciosExistentes.map(s => s.IDServicio);
+                    const serviciosExistentesIds = serviciosExistentes.map(s => s.IDServicios); // ✅ MANTENIDO (Servicios usa IDServicios)
                     
                     const serviciosDuplicados = body.servicios.filter(servicioId => 
                         serviciosExistentesIds.includes(servicioId)
@@ -192,7 +192,7 @@ module.exports = function (dbinyectada) {
             const lugaresConServicios = todosLugares.filter(lugar => {
                 const serviciosDelLugar = todasRelaciones
                     .filter(rel => rel.IDLugar === lugar.IDLugar)
-                    .map(rel => rel.IDServicio);
+                    .map(rel => rel.IDServicio); // ✅ CAMBIADO: IDServicios → IDServicio
                 
                 return serviciosIds.every(servicioId => 
                     serviciosDelLugar.includes(servicioId)
@@ -224,7 +224,7 @@ module.exports = function (dbinyectada) {
 
             // ✅ VALIDACIÓN: Verificar que el servicio no esté duplicado
             const serviciosExistentes = await obtenerServiciosLugar(idLugar);
-            const servicioDuplicado = serviciosExistentes.find(s => s.IDServicio === idServicio);
+            const servicioDuplicado = serviciosExistentes.find(s => s.IDServicios === idServicio); // ✅ MANTENIDO (Servicios usa IDServicios)
             
             if (servicioDuplicado) {
                 throw new Error(`El servicio con ID ${idServicio} ya está asignado a este hospedaje`);
@@ -232,7 +232,7 @@ module.exports = function (dbinyectada) {
 
             const relacion = {
                 IDLugar: parseInt(idLugar),
-                IDServicio: parseInt(idServicio)
+                IDServicio: parseInt(idServicio) // ✅ CAMBIADO: IDServicios → IDServicio
             };
 
             console.log('Creando relación Lugar-Servicio:', relacion);
@@ -254,7 +254,7 @@ module.exports = function (dbinyectada) {
 
             const resultado = await db.eliminar('Lugar_Servicio', { 
                 IDLugar: idLugar, 
-                IDServicio: idServicio 
+                IDServicio: idServicio // ✅ CAMBIADO: IDServicios → IDServicio
             });
             return resultado;
         } catch (error) {
@@ -276,15 +276,22 @@ module.exports = function (dbinyectada) {
             const todasRelaciones = await db.todos('Lugar_Servicio');
             console.log('🔗 Todas las relaciones Lugar_Servicio:', todasRelaciones?.length || 0);
             
+            const idLugarNum = parseInt(idLugar);
+            
             const serviciosDelLugar = todasRelaciones
-                .filter(rel => rel.IDLugar === idLugar)
+                .filter(rel => rel.IDLugar === idLugarNum)
                 .map(rel => {
-                    const servicio = todosServicios.find(s => s.IDServicio === rel.IDServicio);
+                    // ✅ CAMBIADO: IDServicios → IDServicio
+                    const servicio = todosServicios.find(s => s.IDServicios === rel.IDServicio);
                     return servicio;
                 })
                 .filter(servicio => servicio !== undefined);
 
             console.log('✅ Servicios del lugar encontrados:', serviciosDelLugar.length);
+            console.log('📋 Servicios encontrados:', serviciosDelLugar.map(s => ({
+                IDServicios: s.IDServicios,
+                Nombre: s.Nombre
+            })));
             
             return serviciosDelLugar;
         } catch (error) {
