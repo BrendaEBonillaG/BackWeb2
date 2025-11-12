@@ -192,7 +192,7 @@ module.exports = function (dbinyectada) {
             const lugaresConServicios = todosLugares.filter(lugar => {
                 const serviciosDelLugar = todasRelaciones
                     .filter(rel => rel.IDLugar === lugar.IDLugar)
-                    .map(rel => rel.IDServicio); // ✅ CAMBIADO: IDServicios → IDServicio
+                    .map(rel => rel.IDServicio); 
                 
                 return serviciosIds.every(servicioId => 
                     serviciosDelLugar.includes(servicioId)
@@ -210,8 +210,6 @@ module.exports = function (dbinyectada) {
             if (!idLugar || !idServicio) {
                 throw new Error('ID de lugar y ID de servicio son requeridos');
             }
-
-            // ✅ VALIDACIÓN: Verificar que el lugar sea de tipo Hospedaje
             const lugar = await db.uno(TABLA, idLugar);
             if (!lugar || lugar.length === 0) {
                 throw new Error('Lugar no encontrado');
@@ -222,9 +220,8 @@ module.exports = function (dbinyectada) {
                 throw new Error('Solo los lugares de tipo "Hospedaje" pueden tener servicios');
             }
 
-            // ✅ VALIDACIÓN: Verificar que el servicio no esté duplicado
             const serviciosExistentes = await obtenerServiciosLugar(idLugar);
-            const servicioDuplicado = serviciosExistentes.find(s => s.IDServicios === idServicio); // ✅ MANTENIDO (Servicios usa IDServicios)
+            const servicioDuplicado = serviciosExistentes.find(s => s.IDServicios === idServicio); 
             
             if (servicioDuplicado) {
                 throw new Error(`El servicio con ID ${idServicio} ya está asignado a este hospedaje`);
@@ -232,7 +229,7 @@ module.exports = function (dbinyectada) {
 
             const relacion = {
                 IDLugar: parseInt(idLugar),
-                IDServicio: parseInt(idServicio) // ✅ CAMBIADO: IDServicios → IDServicio
+                IDServicio: parseInt(idServicio) 
             };
 
             console.log('Creando relación Lugar-Servicio:', relacion);
@@ -254,7 +251,7 @@ module.exports = function (dbinyectada) {
 
             const resultado = await db.eliminar('Lugar_Servicio', { 
                 IDLugar: idLugar, 
-                IDServicio: idServicio // ✅ CAMBIADO: IDServicios → IDServicio
+                IDServicio: idServicio 
             });
             return resultado;
         } catch (error) {
@@ -281,33 +278,32 @@ module.exports = function (dbinyectada) {
             const serviciosDelLugar = todasRelaciones
                 .filter(rel => rel.IDLugar === idLugarNum)
                 .map(rel => {
-                    // ✅ CAMBIADO: IDServicios → IDServicio
                     const servicio = todosServicios.find(s => s.IDServicios === rel.IDServicio);
                     return servicio;
                 })
                 .filter(servicio => servicio !== undefined);
 
-            console.log('✅ Servicios del lugar encontrados:', serviciosDelLugar.length);
-            console.log('📋 Servicios encontrados:', serviciosDelLugar.map(s => ({
+            console.log(' Servicios del lugar encontrados:', serviciosDelLugar.length);
+            console.log(' Servicios encontrados:', serviciosDelLugar.map(s => ({
                 IDServicios: s.IDServicios,
                 Nombre: s.Nombre
             })));
             
             return serviciosDelLugar;
         } catch (error) {
-            console.error('❌ Error en obtenerServiciosLugar:', error);
+            console.error(' Error en obtenerServiciosLugar:', error);
             throw new Error(`Error al obtener servicios del lugar: ${error.message}`);
         }
     }
 
     async function obtenerTodosServicios() {
         try {
-            console.log('🔍 INICIANDO obtenerTodosServicios...');
-            console.log('📋 Llamando a db.todos("Servicios")');
+            console.log(' INICIANDO obtenerTodosServicios...');
+            console.log(' Llamando a db.todos("Servicios")');
             
             const servicios = await db.todos('Servicios');
             
-            console.log('✅ Servicios obtenidos de la BD:');
+            console.log('Servicios obtenidos de la BD:');
             console.log('   - Tipo:', typeof servicios);
             console.log('   - Es array?', Array.isArray(servicios));
             console.log('   - Cantidad:', servicios?.length || 0);
@@ -320,7 +316,7 @@ module.exports = function (dbinyectada) {
             
             return servicios;
         } catch (error) {
-            console.error('❌ ERROR en obtenerTodosServicios:', error);
+            console.error(' ERROR en obtenerTodosServicios:', error);
             throw new Error(`Error al obtener todos los servicios: ${error.message}`);
         }
     }

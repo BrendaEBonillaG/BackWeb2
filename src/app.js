@@ -10,7 +10,6 @@ const lugares = require('./modulos/lugar/rutas');
 const favoritos = require('./modulos/favoritos/rutas');
 
 const error = require('./red/errors');
-const favoritos = require('./modulos/favoritos');
 
 const app = express();
 

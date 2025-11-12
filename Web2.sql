@@ -95,6 +95,8 @@ CREATE TABLE Comentarios(
   FOREIGN KEY (ResenaFK) REFERENCES Resenas(IDResenas) ON DELETE CASCADE
 );
 
+SELECT * FROM Favoritos;
+
 -- Tabla de favoritos
 CREATE TABLE Favoritos(
   IDFavoritos INT AUTO_INCREMENT PRIMARY KEY,
