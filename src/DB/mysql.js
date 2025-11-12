@@ -10,6 +10,8 @@ const { Favoritos } = require('./modelos/favoritos.js');
 
 async function todos(tabla) {
     try {
+        console.log(`🔍 EJECUTANDO todos(${tabla})`);
+        
         let modelo;
         switch(tabla) {
             case 'Usuario': modelo = Usuario; break;
@@ -23,9 +25,20 @@ async function todos(tabla) {
             case 'Favoritos': modelo = Favoritos; break;
             default: throw new Error('Tabla no encontrada');
         }
+        
+        console.log(`📦 Modelo cargado para ${tabla}:`, modelo?.name);
         const resultados = await modelo.findAll();
+        console.log(`✅ ${tabla} - Resultados encontrados:`, resultados?.length || 0);
+        
+        if (resultados && resultados.length > 0) {
+            console.log(`📋 Primer registro de ${tabla}:`, JSON.stringify(resultados[0]?.dataValues, null, 2));
+        } else {
+            console.log(`❌ ${tabla} - NO SE ENCONTRARON REGISTROS`);
+        }
+        
         return resultados;
     } catch (error) {
+        console.error(`❌ ERROR en todos(${tabla}):`, error);
         throw error;
     }
 }
@@ -49,7 +62,7 @@ async function uno(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; 
+                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -60,15 +73,15 @@ async function uno(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; 
+                campoId = 'IDResenas'; // ✅ MANTENIDO (según tu BD)
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; 
+                campoId = 'IDComentarios'; // ✅ MANTENIDO (según tu BD)
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; 
+                campoId = 'IDFavoritos'; // ✅ MANTENIDO (según tu BD)
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -101,19 +114,43 @@ async function agregar(tabla, data) {
             default: throw new Error('Tabla no encontrada');
         }
 
+        console.log(`🔧 Agregando en tabla: ${tabla}`, data);
+
+        // ✅ LÓGICA CORREGIDA PARA Lugar_Servicio
+        if (tabla === 'Lugar_Servicio') {
+            // Para tablas de unión, usar findOrCreate para evitar duplicados
+            const [resultado, created] = await modelo.findOrCreate({
+                where: {
+                    IDLugar: data.IDLugar,
+                    IDServicio: data.IDServicio // ✅ CAMBIADO: data.IDServicios → data.IDServicio
+                },
+                defaults: data
+            });
+            console.log(`📌 Lugar_Servicio ${created ? 'creado' : 'ya existía'}:`, resultado.dataValues);
+            return resultado;
+        }
+        
         if (tabla === 'Auth') {
             const [resultado, created] = await modelo.upsert(data);
             return resultado;
-        } else if (data.IDUsuario) {
+        } else if (data.IDUsuario && tabla === 'Usuario') {
             const resultado = await modelo.update(data, { 
                 where: { IDUsuario: data.IDUsuario } 
             });
             return resultado;
+        } else if (data.IDLugar && tabla === 'Lugar') {
+            const resultado = await modelo.update(data, { 
+                where: { IDLugar: data.IDLugar } 
+            });
+            return resultado;
         } else {
+            // ✅ CREACIÓN NORMAL para otras tablas
             const resultado = await modelo.create(data);
+            console.log(`✅ ${tabla} creado:`, resultado.dataValues);
             return resultado;
         }
     } catch (error) {
+        console.error(`❌ Error en agregar(${tabla}):`, error);
         throw error;
     }
 }
@@ -137,7 +174,10 @@ async function eliminar(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; 
+                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
+                break;
+            case 'Lugar_Servicio': 
+                modelo = Lugar_Servicio; 
                 break;
             case 'Fotos': 
                 modelo = Fotos; 
@@ -145,15 +185,15 @@ async function eliminar(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; 
+                campoId = 'IDResenas'; // ✅ MANTENIDO
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; 
+                campoId = 'IDComentarios'; // ✅ MANTENIDO
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; 
+                campoId = 'IDFavoritos'; // ✅ MANTENIDO
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -164,6 +204,15 @@ async function eliminar(tabla, id) {
         }
 
         const resultado = await modelo.destroy({ where: whereClause });
+        return { affectedRows: resultado };
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function eliminarLugarServicio(where) {
+    try {
+        const resultado = await Lugar_Servicio.destroy({ where: where });
         return { affectedRows: resultado };
     } catch (error) {
         throw error;
@@ -197,5 +246,6 @@ module.exports = {
     uno,
     agregar,
     eliminar,
+    eliminarLugarServicio,
     query
 };

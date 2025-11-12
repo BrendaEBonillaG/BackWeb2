@@ -15,9 +15,9 @@ const sequelize = new Sequelize(
 class Servicios extends Model { }
 
 Servicios.init({
-    IDServicio: {
+    IDServicios: {
         type: DataTypes.INTEGER,
-        autoincrement: true,
+        autoIncrement: true,
         primaryKey: true
     },
     Nombre:{
