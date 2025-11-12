@@ -6,7 +6,8 @@ const config = require('./config');
 const clientes = require('./modulos/clientes/rutas');
 const usuarios = require('./modulos/usuarios/rutas');
 const auth = require('./modulos/auth/rutas');
-const lugares = require('./modulos/lugar/rutas'); // ← Agrega esta línea
+const lugares = require('./modulos/lugar/rutas'); 
+const favoritos = require('./modulos/favoritos/rutas');
 
 const error = require('./red/errors');
 
@@ -36,7 +37,8 @@ app.set('port', config.app.port);
 app.use('/api/clientes', clientes);
 app.use('/api/usuarios', usuarios);
 app.use('/api/auth', auth);
-app.use('/api/lugares', lugares); // ← Agrega esta línea
+app.use('/api/lugares', lugares); 
+app.use('/api/favoritos',favoritos);
 app.use(error);
 
 module.exports = app;
