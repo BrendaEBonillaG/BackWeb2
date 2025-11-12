@@ -39,7 +39,7 @@ CREATE TABLE Servicios (
 );
 SELECT * FROM Lugar;
 SELECT * FROM Lugar_Servicio;
-
+SELECT * FROM Fotos;
 
 -- Tabla de lugares
 CREATE TABLE Lugar(
