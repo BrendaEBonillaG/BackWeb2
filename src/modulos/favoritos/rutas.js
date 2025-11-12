@@ -20,6 +20,9 @@ async function todos(req, res, next) {
     const items = await controlador.todos(); 
     respuesta.success(req, res, items, 200);
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -30,6 +33,9 @@ async function uno(req, res, next) {
     const item = await controlador.uno(req.params.id); 
     respuesta.success(req, res, item, 200);
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error); 
   }
 }
@@ -40,6 +46,9 @@ async function favoritosPorUsuario(req, res, next) {
     const favoritos = await controlador.favoritosPorUsuario(req.params.usuarioId);
     respuesta.success(req, res, favoritos, 200);
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -50,6 +59,9 @@ async function lugaresFavoritosUsuario(req, res, next) {
     const lugaresFavoritos = await controlador.lugaresFavoritosPorUsuario(req.params.usuarioId);
     respuesta.success(req, res, lugaresFavoritos, 200);
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -60,6 +72,9 @@ async function verificarFavorito(req, res, next) {
     const resultado = await controlador.esFavorito(req.params.usuarioId, req.params.lugarId);
     respuesta.success(req, res, resultado, 200);
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -71,6 +86,9 @@ async function agregar(req, res, next) {
     const mensaje = 'Favorito agregado satisfactoriamente';
     respuesta.success(req, res, mensaje, 201);
   } catch (error) {
+    // ✅ IMPORTANTE: Aquí se capturará el código 409 para duplicados
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -86,6 +104,9 @@ async function eliminar(req, res, next) {
       respuesta.success(req, res, 'Favorito eliminado satisfactoriamente', 200);
     }
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }
@@ -101,6 +122,9 @@ async function eliminarPorId(req, res, next) {
       respuesta.success(req, res, 'Favorito eliminado satisfactoriamente', 200);
     }
   } catch (error) {
+    // ✅ Propagar el código de error correcto
+    const status = error.status || 500;
+    error.status = status;
     next(error);
   }
 }

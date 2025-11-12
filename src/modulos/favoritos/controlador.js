@@ -20,28 +20,34 @@ module.exports = function (dbinyectada) {
             return favoritos;
         } catch (error) {
             console.error('❌ Error al obtener favoritos:', error);
-            throw new Error(`Error al obtener favoritos: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
     async function uno(id) {
         try {
             if (!id) {
-                throw new Error('ID de favorito es requerido');
+                const error = new Error('ID de favorito es requerido');
+                error.status = 400;
+                throw error;
             }
             
             console.log(`🔍 Obteniendo favorito con ID: ${id}`);
             const favorito = await db.uno(TABLA, id);
             
             if (!favorito || favorito.length === 0) {
-                throw new Error('Favorito no encontrado');
+                const error = new Error('Favorito no encontrado');
+                error.status = 404;
+                throw error;
             }
             
             console.log('✅ Favorito encontrado:', favorito[0]);
             return favorito[0];
         } catch (error) {
             console.error('❌ Error al obtener favorito:', error);
-            throw new Error(`Error al obtener favorito: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
@@ -49,7 +55,9 @@ module.exports = function (dbinyectada) {
         try {
             // Validaciones
             if (!body.UsuarioFK || !body.LugarFK) {
-                throw new Error('UsuarioFK y LugarFK son requeridos');
+                const error = new Error('UsuarioFK y LugarFK son requeridos');
+                error.status = 400;
+                throw error;
             }
 
             console.log('➕ Agregando favorito:', body);
@@ -66,7 +74,9 @@ module.exports = function (dbinyectada) {
             });
 
             if (favoritoExistente) {
-                throw new Error('Este lugar ya está en favoritos para este usuario');
+                const error = new Error('Este lugar ya está en favoritos para este usuario');
+                error.status = 409; // ✅ 409 Conflict
+                throw error;
             }
 
             const resultado = await db.agregar(TABLA, favoritoData);
@@ -77,14 +87,17 @@ module.exports = function (dbinyectada) {
             return { ...resultado, IDFavoritos: insertId };
         } catch (error) {
             console.error('❌ Error al agregar favorito:', error);
-            throw new Error(`Error al agregar favorito: ${error.message}`);
+            // ✅ IMPORTANTE: Solo relanzar el error original, NO crear uno nuevo
+            throw error;
         }
     }
 
     async function eliminar(body) {
         try {
             if (!body.UsuarioFK || !body.LugarFK) {
-                throw new Error('UsuarioFK y LugarFK son requeridos para eliminar');
+                const error = new Error('UsuarioFK y LugarFK son requeridos para eliminar');
+                error.status = 400;
+                throw error;
             }
 
             console.log('🗑️ Eliminando favorito:', body);
@@ -97,7 +110,9 @@ module.exports = function (dbinyectada) {
             const favoritoExistente = await db.query(TABLA, whereClause);
 
             if (!favoritoExistente) {
-                throw new Error('Favorito no encontrado');
+                const error = new Error('Favorito no encontrado');
+                error.status = 404;
+                throw error;
             }
 
             const resultado = await db.eliminar(TABLA, favoritoExistente.IDFavoritos);
@@ -106,7 +121,8 @@ module.exports = function (dbinyectada) {
             return resultado;
         } catch (error) {
             console.error('❌ Error al eliminar favorito:', error);
-            throw new Error(`Error al eliminar favorito: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
@@ -114,7 +130,9 @@ module.exports = function (dbinyectada) {
     async function lugaresFavoritosPorUsuario(usuarioId) {
         try {
             if (!usuarioId) {
-                throw new Error('ID de usuario es requerido');
+                const error = new Error('ID de usuario es requerido');
+                error.status = 400;
+                throw error;
             }
 
             console.log(`🔍 Obteniendo lugares favoritos del usuario: ${usuarioId}`);
@@ -158,7 +176,8 @@ module.exports = function (dbinyectada) {
             return lugaresFavoritos;
         } catch (error) {
             console.error('❌ Error al obtener lugares favoritos:', error);
-            throw new Error(`Error al obtener lugares favoritos: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
@@ -202,7 +221,9 @@ module.exports = function (dbinyectada) {
     async function favoritosPorUsuario(usuarioId) {
         try {
             if (!usuarioId) {
-                throw new Error('ID de usuario es requerido');
+                const error = new Error('ID de usuario es requerido');
+                error.status = 400;
+                throw error;
             }
 
             console.log(`🔍 Obteniendo IDs de favoritos del usuario: ${usuarioId}`);
@@ -221,7 +242,8 @@ module.exports = function (dbinyectada) {
             return favoritosUsuario;
         } catch (error) {
             console.error('❌ Error al obtener favoritos por usuario:', error);
-            throw new Error(`Error al obtener favoritos por usuario: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
@@ -229,7 +251,9 @@ module.exports = function (dbinyectada) {
     async function esFavorito(usuarioId, lugarId) {
         try {
             if (!usuarioId || !lugarId) {
-                throw new Error('UsuarioID y LugarID son requeridos');
+                const error = new Error('UsuarioID y LugarID son requeridos');
+                error.status = 400;
+                throw error;
             }
 
             console.log(`🔍 Verificando si lugar ${lugarId} es favorito de usuario ${usuarioId}`);
@@ -248,7 +272,8 @@ module.exports = function (dbinyectada) {
             };
         } catch (error) {
             console.error('❌ Error al verificar favorito:', error);
-            throw new Error(`Error al verificar favorito: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
@@ -256,7 +281,9 @@ module.exports = function (dbinyectada) {
     async function eliminarPorId(idFavorito) {
         try {
             if (!idFavorito) {
-                throw new Error('ID de favorito es requerido');
+                const error = new Error('ID de favorito es requerido');
+                error.status = 400;
+                throw error;
             }
 
             console.log(`🗑️ Eliminando favorito con ID: ${idFavorito}`);
@@ -267,7 +294,8 @@ module.exports = function (dbinyectada) {
             return resultado;
         } catch (error) {
             console.error('❌ Error al eliminar favorito por ID:', error);
-            throw new Error(`Error al eliminar favorito: ${error.message}`);
+            // ✅ SOLO propaga el error, NO crees uno nuevo
+            throw error;
         }
     }
 
