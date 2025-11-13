@@ -62,7 +62,7 @@ async function uno(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
+                campoId = 'IDServicios';
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -73,15 +73,15 @@ async function uno(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; // ✅ MANTENIDO (según tu BD)
+                campoId = 'IDResenas';
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; // ✅ MANTENIDO (según tu BD)
+                campoId = 'IDComentarios';
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; // ✅ MANTENIDO (según tu BD)
+                campoId = 'IDFavoritos';
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -92,8 +92,17 @@ async function uno(tabla, id) {
         }
 
         const resultado = await modelo.findOne({ where: whereClause });
-        return resultado ? [resultado.dataValues] : [];
+        
+        // ✅ CORRECCIÓN: Retornar el objeto directamente en lugar de array
+        if (!resultado) {
+            return null;
+        }
+        
+        // Para compatibilidad con código existente, retornamos en array
+        // pero también manejamos el caso de objeto individual
+        return [resultado.dataValues];
     } catch (error) {
+        console.error(`❌ ERROR en uno(${tabla}, ${id}):`, error);
         throw error;
     }
 }
@@ -116,13 +125,28 @@ async function agregar(tabla, data) {
 
         console.log(`🔧 Agregando en tabla: ${tabla}`, data);
 
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE RESEÑAS
+        if (data.IDResenas && tabla === 'Resenas') {
+            console.log(`🔄 Actualizando reseña existente: ${data.IDResenas}`);
+            const resultado = await modelo.update(data, { 
+                where: { IDResenas: data.IDResenas } 
+            });
+            
+            // Obtener la reseña actualizada
+            const reseñaActualizada = await modelo.findOne({ 
+                where: { IDResenas: data.IDResenas } 
+            });
+            
+            console.log(`✅ Reseña actualizada:`, reseñaActualizada?.dataValues);
+            return reseñaActualizada;
+        }
+        
         // ✅ LÓGICA CORREGIDA PARA Lugar_Servicio
         if (tabla === 'Lugar_Servicio') {
-            // Para tablas de unión, usar findOrCreate para evitar duplicados
             const [resultado, created] = await modelo.findOrCreate({
                 where: {
                     IDLugar: data.IDLugar,
-                    IDServicio: data.IDServicio // ✅ CAMBIADO: data.IDServicios → data.IDServicio
+                    IDServicio: data.IDServicio
                 },
                 defaults: data
             });
@@ -130,21 +154,55 @@ async function agregar(tabla, data) {
             return resultado;
         }
         
+        // ✅ LÓGICA PARA Auth (upsert)
         if (tabla === 'Auth') {
             const [resultado, created] = await modelo.upsert(data);
             return resultado;
-        } else if (data.IDUsuario && tabla === 'Usuario') {
+        } 
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Usuario
+        else if (data.IDUsuario && tabla === 'Usuario') {
             const resultado = await modelo.update(data, { 
                 where: { IDUsuario: data.IDUsuario } 
             });
             return resultado;
-        } else if (data.IDLugar && tabla === 'Lugar') {
+        } 
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Lugar
+        else if (data.IDLugar && tabla === 'Lugar') {
             const resultado = await modelo.update(data, { 
                 where: { IDLugar: data.IDLugar } 
             });
             return resultado;
-        } else {
-            // ✅ CREACIÓN NORMAL para otras tablas
+        } 
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Fotos
+        else if (data.IDFoto && tabla === 'Fotos') {
+            const resultado = await modelo.update(data, { 
+                where: { IDFoto: data.IDFoto } 
+            });
+            return resultado;
+        }
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Servicios
+        else if (data.IDServicios && tabla === 'Servicios') {
+            const resultado = await modelo.update(data, { 
+                where: { IDServicios: data.IDServicios } 
+            });
+            return resultado;
+        }
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Comentarios
+        else if (data.IDComentarios && tabla === 'Comentarios') {
+            const resultado = await modelo.update(data, { 
+                where: { IDComentarios: data.IDComentarios } 
+            });
+            return resultado;
+        }
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Favoritos
+        else if (data.IDFavoritos && tabla === 'Favoritos') {
+            const resultado = await modelo.update(data, { 
+                where: { IDFavoritos: data.IDFavoritos } 
+            });
+            return resultado;
+        }
+        // ✅ CREACIÓN NORMAL para otras tablas
+        else {
             const resultado = await modelo.create(data);
             console.log(`✅ ${tabla} creado:`, resultado.dataValues);
             return resultado;
@@ -174,7 +232,7 @@ async function eliminar(tabla, id) {
                 break;
             case 'Servicios': 
                 modelo = Servicios; 
-                campoId = 'IDServicios'; // ✅ CORREGIDO: 'IDServicio' → 'IDServicios'
+                campoId = 'IDServicios';
                 break;
             case 'Lugar_Servicio': 
                 modelo = Lugar_Servicio; 
@@ -185,15 +243,15 @@ async function eliminar(tabla, id) {
                 break;
             case 'Resenas': 
                 modelo = Resenas; 
-                campoId = 'IDResenas'; // ✅ MANTENIDO
+                campoId = 'IDResenas';
                 break;
             case 'Comentarios': 
                 modelo = Comentarios; 
-                campoId = 'IDComentarios'; // ✅ MANTENIDO
+                campoId = 'IDComentarios';
                 break;
             case 'Favoritos': 
                 modelo = Favoritos; 
-                campoId = 'IDFavoritos'; // ✅ MANTENIDO
+                campoId = 'IDFavoritos';
                 break;
             default: throw new Error('Tabla no encontrada');
         }
@@ -206,6 +264,7 @@ async function eliminar(tabla, id) {
         const resultado = await modelo.destroy({ where: whereClause });
         return { affectedRows: resultado };
     } catch (error) {
+        console.error(`❌ ERROR en eliminar(${tabla}, ${id}):`, error);
         throw error;
     }
 }
@@ -235,8 +294,40 @@ async function query(tabla, where) {
             default: throw new Error('Tabla no encontrada');
         }
         const resultado = await modelo.findOne({ where: where });
-        return resultado ? resultado.dataValues : null;
+        
+        // ✅ CORRECCIÓN: Retornar null si no se encuentra
+        if (!resultado) {
+            return null;
+        }
+        
+        return resultado.dataValues;
     } catch (error) {
+        console.error(`❌ ERROR en query(${tabla}):`, error);
+        throw error;
+    }
+}
+
+// ✅ NUEVA FUNCIÓN: Buscar múltiples registros con condiciones
+async function buscar(tabla, where) {
+    try {
+        let modelo;
+        switch(tabla) {
+            case 'Usuario': modelo = Usuario; break;
+            case 'Auth': modelo = Auth; break;
+            case 'Lugar': modelo = Lugar; break;
+            case 'Servicios': modelo = Servicios; break;
+            case 'Lugar_Servicio': modelo = Lugar_Servicio; break;
+            case 'Fotos': modelo = Fotos; break;
+            case 'Resenas': modelo = Resenas; break;
+            case 'Comentarios': modelo = Comentarios; break;
+            case 'Favoritos': modelo = Favoritos; break;
+            default: throw new Error('Tabla no encontrada');
+        }
+        
+        const resultados = await modelo.findAll({ where: where });
+        return resultados.map(item => item.dataValues);
+    } catch (error) {
+        console.error(`❌ ERROR en buscar(${tabla}):`, error);
         throw error;
     }
 }
@@ -247,5 +338,6 @@ module.exports = {
     agregar,
     eliminar,
     eliminarLugarServicio,
-    query
+    query,
+    buscar // ✅ NUEVA FUNCIÓN EXPORTADA
 };

@@ -24,15 +24,35 @@ module.exports = function (dbinyectada) {
             }
 
             const resultado = await bcrypt.compare(Password, data.Password);
-           
 
             if (resultado === true) {
-                const token = auth.asignarToken({ ...data });
+                // ✅ OBTENER INFORMACIÓN COMPLETA DEL USUARIO PARA EL TOKEN
+                const usuarioCompleto = await db.uno('Usuario', data.IDAuth);
+                
+                if (!usuarioCompleto || usuarioCompleto.length === 0) {
+                    throw new Error('Información de usuario no encontrada');
+                }
+
+                const usuarioData = usuarioCompleto[0];
+                
+                // ✅ USAR LA NUEVA FUNCIÓN ESPECÍFICA PARA USUARIOS
+                const token = auth.asignarTokenUsuario({
+                    IDUsuario: usuarioData.IDUsuario,      // ✅ CRUCIAL para reseñas
+                    IDAuth: data.IDAuth,                   // ✅ Para compatibilidad
+                    Usuario: data.Usuario,
+                    CorreoElectronico: usuarioData.CorreoElectronico,
+                    Nombre: usuarioData.Nombre
+                    // Agregar otros campos que necesites
+                });
+
                 return {
                     token: token,
                     usuario: {
+                        IDUsuario: usuarioData.IDUsuario,  // ✅ Incluir IDUsuario en respuesta
                         IDAuth: data.IDAuth,
-                        Usuario: data.Usuario
+                        Usuario: data.Usuario,
+                        Nombre: usuarioData.Nombre,
+                        CorreoElectronico: usuarioData.CorreoElectronico
                     }
                 };
             } else {
@@ -45,7 +65,6 @@ module.exports = function (dbinyectada) {
 
     async function agregar(data) {
         try {
-
             if (!data.id) {
                 throw new Error('ID es requerido');
             }

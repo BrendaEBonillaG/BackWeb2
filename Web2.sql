@@ -68,6 +68,8 @@ CREATE TABLE Fotos(
   FOREIGN KEY (LugarFK) REFERENCES Lugar(IDLugar) ON DELETE CASCADE
 );
 
+SELECT * FROM Resenas;
+
 -- Tabla de reseñas
 CREATE TABLE Resenas(
   IDResenas INT AUTO_INCREMENT PRIMARY KEY,
