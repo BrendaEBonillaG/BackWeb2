@@ -13,7 +13,7 @@ router.get('/usuario/:usuarioId', reseñasPorUsuario);
 router.get('/estadisticas/lugar/:lugarId', estadisticasPorLugar);
 router.post('/', agregar);
 router.put('/', actualizar);
-router.delete('/:id', eliminar);
+router.put('/:id', eliminar); // ✅ CAMBIADO: DELETE → PUT
 
 // Obtener todas las reseñas (con filtro opcional por query params)
 async function todos(req, res, next) {
@@ -154,50 +154,141 @@ async function agregar(req, res, next) {
 // Actualizar una reseña (solo el usuario que la creó)
 async function actualizar(req, res, next) {
   try {
-    // ✅ USAR TU SISTEMA DE AUTH EXISTENTE
-    const decodificado = auth.decodificarCabecera(req);
-    const usuarioId = decodificado.IDUsuario;
-    
-    if (!usuarioId) {
+    console.log('🔐 HEADERS COMPLETOS:', JSON.stringify(req.headers, null, 2));
+    console.log('🔐 Authorization header:', req.headers.authorization);
+
+    // ✅ VERIFICAR SI EL TOKEN LLEGA CORRECTAMENTE
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      console.log('❌ No hay header Authorization');
       return res.status(401).json({
         success: false,
-        message: 'Usuario no autenticado'
+        message: 'Usuario no autenticado - No hay token'
       });
     }
 
-    console.log(`👤 Usuario autenticado ID: ${usuarioId} actualizando reseña`);
+    if (!authHeader.startsWith('Bearer ')) {
+      console.log('❌ Formato incorrecto del token');
+      return res.status(401).json({
+        success: false,
+        message: 'Formato de token inválido. Debe ser: Bearer <token>'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    console.log('🔐 Token recibido:', token ? '✅' : '❌ NO HAY TOKEN');
     
-    const resultado = await controlador.actualizar(req.body, usuarioId); 
-    const mensaje = 'Reseña actualizada satisfactoriamente';
-    respuesta.success(req, res, mensaje, 200);
+    // ✅ INTENTAR DECODIFICAR EL TOKEN
+    try {
+      const decodificado = auth.decodificarCabecera(req);
+      console.log('🔓 Token decodificado:', decodificado);
+      
+      const usuarioId = decodificado.IDUsuario;
+      console.log('👤 ID Usuario extraído:', usuarioId);
+      
+      if (!usuarioId) {
+        console.log('❌ No se encontró IDUsuario en el token');
+        return res.status(401).json({
+          success: false,
+          message: 'Token inválido - No contiene ID de usuario'
+        });
+      }
+
+      console.log('✅ Usuario autenticado correctamente. ID:', usuarioId);
+      console.log('✏️ Datos para actualizar:', req.body);
+      
+      // ✅ CONTINUAR CON LA LÓGICA DE ACTUALIZAR RESEÑA
+      const resultado = await controlador.actualizar(req.body, usuarioId); 
+      const mensaje = 'Reseña actualizada satisfactoriamente';
+      respuesta.success(req, res, mensaje, 200);
+      
+    } catch (tokenError) {
+      console.error('❌ Error al decodificar token:', tokenError.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido o expirado: ' + tokenError.message
+      });
+    }
+
   } catch (error) {
+    console.error('❌ Error general en actualizar reseña:', error);
     const status = error.status || 500;
     error.status = status;
     next(error);
   }
 }
 
-// Eliminar una reseña (soft delete - solo el usuario que la creó)
+// Eliminar una reseña (soft delete - usando PUT)
 async function eliminar(req, res, next) {
   try {
-    // ✅ USAR TU SISTEMA DE AUTH EXISTENTE
-    const decodificado = auth.decodificarCabecera(req);
-    const usuarioId = decodificado.IDUsuario;
-    
-    if (!usuarioId) {
+    console.log('🔐 HEADERS COMPLETOS:', JSON.stringify(req.headers, null, 2));
+    console.log('🔐 Authorization header:', req.headers.authorization);
+
+    // ✅ VERIFICAR SI EL TOKEN LLEGA CORRECTAMENTE
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      console.log('❌ No hay header Authorization');
       return res.status(401).json({
         success: false,
-        message: 'Usuario no autenticado'
+        message: 'Usuario no autenticado - No hay token'
       });
     }
 
-    console.log(`👤 Usuario autenticado ID: ${usuarioId} eliminando reseña`);
+    if (!authHeader.startsWith('Bearer ')) {
+      console.log('❌ Formato incorrecto del token');
+      return res.status(401).json({
+        success: false,
+        message: 'Formato de token inválido. Debe ser: Bearer <token>'
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    console.log('🔐 Token recibido:', token ? '✅' : '❌ NO HAY TOKEN');
     
-    const { id } = req.params;
-    const resultado = await controlador.eliminar(id, usuarioId); 
-    
-    respuesta.success(req, res, 'Reseña eliminada satisfactoriamente', 200);
+    // ✅ INTENTAR DECODIFICAR EL TOKEN
+    try {
+      const decodificado = auth.decodificarCabecera(req);
+      console.log('🔓 Token decodificado:', decodificado);
+      
+      const usuarioId = decodificado.IDUsuario;
+      console.log('👤 ID Usuario extraído:', usuarioId);
+      
+      if (!usuarioId) {
+        console.log('❌ No se encontró IDUsuario en el token');
+        return res.status(401).json({
+          success: false,
+          message: 'Token inválido - No contiene ID de usuario'
+        });
+      }
+
+      console.log('✅ Usuario autenticado correctamente. ID:', usuarioId);
+      
+      // ✅ OBTENER EL ID DE LA RESEÑA DE LOS PARÁMETROS
+      const { id } = req.params;
+      console.log('🗑️ ID de reseña a eliminar:', id);
+      
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID de reseña es requerido'
+        });
+      }
+
+      // ✅ LLAMAR AL CONTROLADOR PARA ELIMINAR
+      const resultado = await controlador.eliminar(id, usuarioId); 
+      
+      respuesta.success(req, res, 'Reseña eliminada satisfactoriamente', 200);
+      
+    } catch (tokenError) {
+      console.error('❌ Error al decodificar token:', tokenError.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Token inválido o expirado: ' + tokenError.message
+      });
+    }
+
   } catch (error) {
+    console.error('❌ Error general en eliminar reseña:', error);
     const status = error.status || 500;
     error.status = status;
     next(error);

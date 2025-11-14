@@ -252,10 +252,11 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Soft delete - marcar como inactiva
+            // ✅ CORRECCIÓN: Solo enviar los campos necesarios para el soft delete
             const resultado = await db.agregar(TABLA, {
-                ...reseña[0],
+                IDResenas: parseInt(idResena),
                 Activo: false
+                // ✅ NO incluir los otros campos para evitar que se actualicen
             });
 
             console.log('✅ Reseña eliminada exitosamente');
