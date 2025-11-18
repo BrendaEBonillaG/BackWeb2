@@ -93,13 +93,10 @@ async function uno(tabla, id) {
 
         const resultado = await modelo.findOne({ where: whereClause });
         
-        // ✅ CORRECCIÓN: Retornar el objeto directamente en lugar de array
         if (!resultado) {
             return null;
         }
         
-        // Para compatibilidad con código existente, retornamos en array
-        // pero también manejamos el caso de objeto individual
         return [resultado.dataValues];
     } catch (error) {
         console.error(`❌ ERROR en uno(${tabla}, ${id}):`, error);
@@ -132,13 +129,27 @@ async function agregar(tabla, data) {
                 where: { IDResenas: data.IDResenas } 
             });
             
-            // Obtener la reseña actualizada
             const reseñaActualizada = await modelo.findOne({ 
                 where: { IDResenas: data.IDResenas } 
             });
             
             console.log(`✅ Reseña actualizada:`, reseñaActualizada?.dataValues);
             return reseñaActualizada;
+        }
+        
+        // ✅ LÓGICA PARA ACTUALIZACIÓN DE COMENTARIOS
+        if (data.IDComentarios && tabla === 'Comentarios') {
+            console.log(`🔄 Actualizando comentario existente: ${data.IDComentarios}`);
+            const resultado = await modelo.update(data, { 
+                where: { IDComentarios: data.IDComentarios } 
+            });
+            
+            const comentarioActualizado = await modelo.findOne({ 
+                where: { IDComentarios: data.IDComentarios } 
+            });
+            
+            console.log(`✅ Comentario actualizado:`, comentarioActualizado?.dataValues);
+            return comentarioActualizado;
         }
         
         // ✅ LÓGICA CORREGIDA PARA Lugar_Servicio
@@ -184,13 +195,6 @@ async function agregar(tabla, data) {
         else if (data.IDServicios && tabla === 'Servicios') {
             const resultado = await modelo.update(data, { 
                 where: { IDServicios: data.IDServicios } 
-            });
-            return resultado;
-        }
-        // ✅ LÓGICA PARA ACTUALIZACIÓN DE Comentarios
-        else if (data.IDComentarios && tabla === 'Comentarios') {
-            const resultado = await modelo.update(data, { 
-                where: { IDComentarios: data.IDComentarios } 
             });
             return resultado;
         }
@@ -295,7 +299,6 @@ async function query(tabla, where) {
         }
         const resultado = await modelo.findOne({ where: where });
         
-        // ✅ CORRECCIÓN: Retornar null si no se encuentra
         if (!resultado) {
             return null;
         }
@@ -307,7 +310,6 @@ async function query(tabla, where) {
     }
 }
 
-// ✅ NUEVA FUNCIÓN: Buscar múltiples registros con condiciones
 async function buscar(tabla, where) {
     try {
         let modelo;
@@ -339,5 +341,5 @@ module.exports = {
     eliminar,
     eliminarLugarServicio,
     query,
-    buscar // ✅ NUEVA FUNCIÓN EXPORTADA
+    buscar
 };
