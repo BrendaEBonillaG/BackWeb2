@@ -1,3 +1,5 @@
+DROP DATABASE web2;
+
 CREATE DATABASE Web2;
 USE Web2;
 
@@ -6,11 +8,14 @@ FLUSH PRIVILEGES;
 
 SELECT * FROM Usuario;
 SELECT * FROM Auth;
-DESCRIBE Usuario;
-DROP DATABASE web2;
+SELECT * FROM Lugar;
+SELECT * FROM Lugar_Servicio;
+SELECT * FROM Fotos;
+SELECT * FROM Resenas;
+SELECT * FROM Comentarios;
+SELECT * FROM Servicios;
+SELECT * FROM Favoritos;
 
-TRUNCATE TABLE Usuario;
-TRUNCATE TABLE Auth;
 
 -- Tabla de usuarios
 CREATE TABLE Usuario(
@@ -28,8 +33,6 @@ Usuario VARCHAR(30) NOT NULL,
 Password VARCHAR(255) NOT NULL -- mejor para hash
 );
 
-SELECT * FROM Servicios;
-
 -- Tabla de servicios (pre-cargados)
 CREATE TABLE Servicios (
   IDServicios INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,9 +40,6 @@ CREATE TABLE Servicios (
   Logo VARCHAR(255) NULL, -- ruta o URL del logo
   Activo TINYINT(1) NOT NULL DEFAULT 1
 );
-SELECT * FROM Lugar;
-SELECT * FROM Lugar_Servicio;
-SELECT * FROM Fotos;
 
 -- Tabla de lugares
 CREATE TABLE Lugar(
@@ -94,8 +94,6 @@ CREATE TABLE Comentarios(
   FOREIGN KEY (UsuarioFK) REFERENCES Usuario(IDUsuario) ON DELETE CASCADE,
   FOREIGN KEY (ResenaFK) REFERENCES Resenas(IDResenas) ON DELETE CASCADE
 );
-
-SELECT * FROM Favoritos;
 
 -- Tabla de favoritos
 CREATE TABLE Favoritos(

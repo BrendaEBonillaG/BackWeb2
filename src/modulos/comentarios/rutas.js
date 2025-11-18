@@ -1,27 +1,26 @@
 const express = require('express');
 const respuesta = require('../../red/respuestas');
 const controlador = require('./index');
-const auth = require('../../auth'); // ✅ IMPORTAR TU AUTH
+const auth = require('../../auth');
 
 const router = express.Router();
 
 // Rutas principales
 router.get('/', todos);
 router.get('/:id', uno);
-router.get('/lugar/:lugarId', reseñasPorLugar);
-router.get('/usuario/:usuarioId', reseñasPorUsuario);
-router.get('/estadisticas/lugar/:lugarId', estadisticasPorLugar);
+router.get('/resena/:resenaId', comentariosPorResena);
+router.get('/usuario/:usuarioId', comentariosPorUsuario);
 router.post('/', agregar);
 router.put('/', actualizar);
-router.put('/:id', eliminar); // ✅ CAMBIADO: DELETE → PUT
+router.put('/:id', eliminar);
 
-// Obtener todas las reseñas (con filtro opcional por query params)
+// Obtener todos los comentarios (con filtro opcional por query params)
 async function todos(req, res, next) {
   try {
-    // Permitir filtros por query params: ?LugarFK=123
+    // Permitir filtros por query params: ?ResenaFK=123
     const filtros = {};
-    if (req.query.LugarFK) {
-      filtros.LugarFK = req.query.LugarFK;
+    if (req.query.ResenaFK) {
+      filtros.ResenaFK = req.query.ResenaFK;
     }
     
     const items = await controlador.todos(filtros); 
@@ -33,7 +32,7 @@ async function todos(req, res, next) {
   }
 }
 
-// Obtener una reseña por ID
+// Obtener un comentario por ID
 async function uno(req, res, next) {
   try {
     const item = await controlador.uno(req.params.id); 
@@ -45,12 +44,12 @@ async function uno(req, res, next) {
   }
 }
 
-// Obtener reseñas por lugar (para mostrar en ventana)
-async function reseñasPorLugar(req, res, next) {
+// Obtener comentarios por reseña
+async function comentariosPorResena(req, res, next) {
   try {
-    const { lugarId } = req.params;
-    const reseñas = await controlador.reseñasPorLugar(lugarId);
-    respuesta.success(req, res, reseñas, 200);
+    const { resenaId } = req.params;
+    const comentarios = await controlador.comentariosPorResena(resenaId);
+    respuesta.success(req, res, comentarios, 200);
   } catch (error) {
     const status = error.status || 500;
     error.status = status;
@@ -58,12 +57,12 @@ async function reseñasPorLugar(req, res, next) {
   }
 }
 
-// Obtener reseñas por usuario
-async function reseñasPorUsuario(req, res, next) {
+// Obtener comentarios por usuario
+async function comentariosPorUsuario(req, res, next) {
   try {
     const { usuarioId } = req.params;
-    const reseñas = await controlador.reseñasPorUsuario(usuarioId);
-    respuesta.success(req, res, reseñas, 200);
+    const comentarios = await controlador.comentariosPorUsuario(usuarioId);
+    respuesta.success(req, res, comentarios, 200);
   } catch (error) {
     const status = error.status || 500;
     error.status = status;
@@ -71,20 +70,7 @@ async function reseñasPorUsuario(req, res, next) {
   }
 }
 
-// Obtener estadísticas de reseñas por lugar
-async function estadisticasPorLugar(req, res, next) {
-  try {
-    const { lugarId } = req.params;
-    const estadisticas = await controlador.estadisticasPorLugar(lugarId);
-    respuesta.success(req, res, estadisticas, 200);
-  } catch (error) {
-    const status = error.status || 500;
-    error.status = status;
-    next(error);
-  }
-}
-
-// Agregar una nueva reseña (requiere autenticación)
+// Agregar un nuevo comentario (requiere autenticación)
 async function agregar(req, res, next) {
   try {
     console.log('🔐 HEADERS COMPLETOS:', JSON.stringify(req.headers, null, 2));
@@ -111,12 +97,11 @@ async function agregar(req, res, next) {
     const token = authHeader.split(' ')[1];
     console.log('🔐 Token recibido:', token ? '✅' : '❌ NO HAY TOKEN');
     
-    // ✅ INTENTAR DECODIFICAR EL TOKEN CON TU SISTEMA AUTH
+    // ✅ INTENTAR DECODIFICAR EL TOKEN
     try {
       const decodificado = auth.decodificarCabecera(req);
       console.log('🔓 Token decodificado:', decodificado);
       
-      // ✅ OBTENER IDUsuario DEL TOKEN DECODIFICADO
       const usuarioId = decodificado.IDUsuario;
       console.log('👤 ID Usuario extraído:', usuarioId);
       
@@ -130,9 +115,9 @@ async function agregar(req, res, next) {
 
       console.log('✅ Usuario autenticado correctamente. ID:', usuarioId);
       
-      // ✅ CONTINUAR CON LA LÓGICA DE AGREGAR RESEÑA
+      // ✅ CONTINUAR CON LA LÓGICA DE AGREGAR COMENTARIO
       const resultado = await controlador.agregar(req.body, usuarioId); 
-      const mensaje = 'Reseña agregada satisfactoriamente';
+      const mensaje = 'Comentario agregado satisfactoriamente';
       respuesta.success(req, res, mensaje, 201);
       
     } catch (tokenError) {
@@ -144,14 +129,14 @@ async function agregar(req, res, next) {
     }
 
   } catch (error) {
-    console.error('❌ Error general en agregar reseña:', error);
+    console.error('❌ Error general en agregar comentario:', error);
     const status = error.status || 500;
     error.status = status;
     next(error);
   }
 }
 
-// Actualizar una reseña (solo el usuario que la creó)
+// Actualizar un comentario (solo el usuario que lo creó)
 async function actualizar(req, res, next) {
   try {
     console.log('🔐 HEADERS COMPLETOS:', JSON.stringify(req.headers, null, 2));
@@ -197,9 +182,9 @@ async function actualizar(req, res, next) {
       console.log('✅ Usuario autenticado correctamente. ID:', usuarioId);
       console.log('✏️ Datos para actualizar:', req.body);
       
-      // ✅ CONTINUAR CON LA LÓGICA DE ACTUALIZAR RESEÑA
+      // ✅ CONTINUAR CON LA LÓGICA DE ACTUALIZAR COMENTARIO
       const resultado = await controlador.actualizar(req.body, usuarioId); 
-      const mensaje = 'Reseña actualizada satisfactoriamente';
+      const mensaje = 'Comentario actualizado satisfactoriamente';
       respuesta.success(req, res, mensaje, 200);
       
     } catch (tokenError) {
@@ -211,14 +196,14 @@ async function actualizar(req, res, next) {
     }
 
   } catch (error) {
-    console.error('❌ Error general en actualizar reseña:', error);
+    console.error('❌ Error general en actualizar comentario:', error);
     const status = error.status || 500;
     error.status = status;
     next(error);
   }
 }
 
-// Eliminar una reseña (soft delete - usando PUT)
+// Eliminar un comentario (soft delete - usando PUT)
 async function eliminar(req, res, next) {
   try {
     console.log('🔐 HEADERS COMPLETOS:', JSON.stringify(req.headers, null, 2));
@@ -263,21 +248,21 @@ async function eliminar(req, res, next) {
 
       console.log('✅ Usuario autenticado correctamente. ID:', usuarioId);
       
-      // ✅ OBTENER EL ID DE LA RESEÑA DE LOS PARÁMETROS
+      // ✅ OBTENER EL ID DEL COMENTARIO DE LOS PARÁMETROS
       const { id } = req.params;
-      console.log('🗑️ ID de reseña a eliminar:', id);
+      console.log('🗑️ ID de comentario a eliminar:', id);
       
       if (!id) {
         return res.status(400).json({
           success: false,
-          message: 'ID de reseña es requerido'
+          message: 'ID de comentario es requerido'
         });
       }
 
       // ✅ LLAMAR AL CONTROLADOR PARA ELIMINAR
       const resultado = await controlador.eliminar(id, usuarioId); 
       
-      respuesta.success(req, res, 'Reseña eliminada satisfactoriamente', 200);
+      respuesta.success(req, res, 'Comentario eliminado satisfactoriamente', 200);
       
     } catch (tokenError) {
       console.error('❌ Error al decodificar token:', tokenError.message);
@@ -288,7 +273,7 @@ async function eliminar(req, res, next) {
     }
 
   } catch (error) {
-    console.error('❌ Error general en eliminar reseña:', error);
+    console.error('❌ Error general en eliminar comentario:', error);
     const status = error.status || 500;
     error.status = status;
     next(error);
