@@ -9,10 +9,8 @@ module.exports = function (dbinyectada) {
 
     async function todos(filtros = {}) {
         try {
-            console.log('🔍 Obteniendo todos los comentarios');
             const todosComentarios = await db.todos(TABLA);
             
-            // Filtrar por reseña si se especifica
             let comentariosFiltrados = todosComentarios;
             if (filtros.ResenaFK) {
                 comentariosFiltrados = todosComentarios.filter(comentario => 
@@ -20,15 +18,13 @@ module.exports = function (dbinyectada) {
                 );
             }
             
-            // Filtrar solo comentarios activos
             const comentariosActivos = comentariosFiltrados.filter(comentario => 
                 comentario.Activo === true || comentario.Activo === 1
             );
 
-            console.log(`✅ Comentarios encontrados: ${comentariosActivos.length}`);
             return comentariosActivos;
         } catch (error) {
-            console.error('❌ Error al obtener comentarios:', error);
+            console.error('Error al obtener comentarios:', error);
             throw new Error(`Error al obtener comentarios: ${error.message}`);
         }
     }
@@ -41,7 +37,6 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
             
-            console.log(`🔍 Obteniendo comentario con ID: ${id}`);
             const comentario = await db.uno(TABLA, id);
             
             if (!comentario || comentario.length === 0) {
@@ -50,48 +45,41 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
             
-            // Verificar que el comentario esté activo
             if (!comentario[0].Activo) {
                 const error = new Error('Comentario no disponible');
                 error.status = 404;
                 throw error;
             }
-            
-            console.log('✅ Comentario encontrado:', comentario[0]);
+        
             return comentario[0];
         } catch (error) {
-            console.error('❌ Error al obtener comentario:', error);
+            console.error('Error al obtener comentario:', error);
             throw error;
         }
     }
 
     async function agregar(body, usuarioId) {
         try {
-            // Validaciones básicas
             if (!body.Texto || !body.ResenaFK) {
                 const error = new Error('Texto y ResenaFK son requeridos');
                 error.status = 400;
                 throw error;
             }
 
-            // Validar que el usuario esté logueado
             if (!usuarioId) {
                 const error = new Error('Usuario no autenticado');
                 error.status = 401;
                 throw error;
             }
 
-            console.log('➕ Agregando comentario:', body);
-
             const comentarioData = {
                 Texto: body.Texto.trim(),
-                Fecha: new Date(), // Fecha actual
-                UsuarioFK: parseInt(usuarioId), // ✅ Usuario logueado
+                Fecha: new Date(), 
+                UsuarioFK: parseInt(usuarioId), 
                 ResenaFK: parseInt(body.ResenaFK),
                 Activo: true
             };
 
-            // Verificar si la reseña existe
             const reseñaExistente = await db.uno('Resenas', comentarioData.ResenaFK);
             if (!reseñaExistente || reseñaExistente.length === 0) {
                 const error = new Error('La reseña especificada no existe');
@@ -99,7 +87,6 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Verificar que la reseña esté activa
             if (!reseñaExistente[0].Activo) {
                 const error = new Error('No se puede comentar en una reseña eliminada');
                 error.status = 400;
@@ -109,7 +96,6 @@ module.exports = function (dbinyectada) {
             const resultado = await db.agregar(TABLA, comentarioData);
             
             const insertId = resultado?.IDComentarios || resultado?.dataValues?.IDComentarios;
-            console.log('✅ Comentario agregado exitosamente. IDComentarios:', insertId);
             
             return { 
                 ...resultado, 
@@ -117,30 +103,25 @@ module.exports = function (dbinyectada) {
                 message: 'Comentario agregado correctamente' 
             };
         } catch (error) {
-            console.error('❌ Error al agregar comentario:', error);
+            console.error('Error al agregar comentario:', error);
             throw error;
         }
     }
 
     async function actualizar(body, usuarioId) {
         try {
-            // Validaciones básicas
             if (!body.IDComentarios) {
                 const error = new Error('IDComentarios es requerido para actualizar');
                 error.status = 400;
                 throw error;
             }
 
-            // Validar que el usuario esté logueado
             if (!usuarioId) {
                 const error = new Error('Usuario no autenticado');
                 error.status = 401;
                 throw error;
             }
 
-            console.log('✏️ Actualizando comentario:', body);
-
-            // Obtener el comentario actual
             const comentarioActual = await db.uno(TABLA, body.IDComentarios);
             if (!comentarioActual || comentarioActual.length === 0) {
                 const error = new Error('Comentario no encontrado');
@@ -148,16 +129,14 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Verificar que el comentario pertenezca al usuario logueado
             if (comentarioActual[0].UsuarioFK !== parseInt(usuarioId)) {
                 const error = new Error('No tienes permisos para editar este comentario');
                 error.status = 403;
                 throw error;
             }
 
-            // Preparar datos para actualizar
             const datosActualizar = {
-                Fecha: new Date() // Actualizar fecha de modificación
+                Fecha: new Date() 
             };
             
             if (body.Texto !== undefined) {
@@ -175,13 +154,12 @@ module.exports = function (dbinyectada) {
                 IDComentarios: body.IDComentarios
             });
 
-            console.log('✅ Comentario actualizado exitosamente');
             return { 
                 ...resultado,
                 message: 'Comentario actualizado correctamente' 
             };
         } catch (error) {
-            console.error('❌ Error al actualizar comentario:', error);
+            console.error('Error al actualizar comentario:', error);
             throw error;
         }
     }
@@ -194,16 +172,12 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Validar que el usuario esté logueado
             if (!usuarioId) {
                 const error = new Error('Usuario no autenticado');
                 error.status = 401;
                 throw error;
             }
 
-            console.log(`🗑️ Eliminando comentario con ID: ${idComentario}`);
-
-            // Obtener el comentario
             const comentario = await db.uno(TABLA, idComentario);
             if (!comentario || comentario.length === 0) {
                 const error = new Error('Comentario no encontrado');
@@ -211,26 +185,23 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Verificar que el comentario pertenezca al usuario logueado
             if (comentario[0].UsuarioFK !== parseInt(usuarioId)) {
                 const error = new Error('No tienes permisos para eliminar este comentario');
                 error.status = 403;
                 throw error;
             }
 
-            // Soft delete - marcar como inactivo
             const resultado = await db.agregar(TABLA, {
                 IDComentarios: parseInt(idComentario),
                 Activo: false
             });
 
-            console.log('✅ Comentario eliminado exitosamente');
             return { 
                 affectedRows: 1,
                 message: 'Comentario eliminado correctamente' 
             };
         } catch (error) {
-            console.error('❌ Error al eliminar comentario:', error);
+            console.error('Error al eliminar comentario:', error);
             throw error;
         }
     }
@@ -243,15 +214,11 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            console.log(`🔍 Obteniendo comentarios para la reseña: ${resenaId}`);
-            
-            // Usar la función todos con filtro por reseña
             const comentarios = await todos({ ResenaFK: resenaId });
             
-            console.log(`✅ Comentarios encontrados para la reseña ${resenaId}: ${comentarios.length}`);
             return comentarios;
         } catch (error) {
-            console.error('❌ Error al obtener comentarios por reseña:', error);
+            console.error('Error al obtener comentarios por reseña:', error);
             throw error;
         }
     }
@@ -263,19 +230,16 @@ module.exports = function (dbinyectada) {
                 error.status = 400;
                 throw error;
             }
-
-            console.log(`🔍 Obteniendo comentarios del usuario: ${usuarioId}`);
-            
+   
             const todosComentarios = await db.todos(TABLA);
             const comentariosUsuario = todosComentarios.filter(comentario => 
                 comentario.UsuarioFK === parseInt(usuarioId) && 
                 (comentario.Activo === true || comentario.Activo === 1)
             );
 
-            console.log(`✅ Comentarios del usuario ${usuarioId}: ${comentariosUsuario.length}`);
             return comentariosUsuario;
         } catch (error) {
-            console.error('❌ Error al obtener comentarios por usuario:', error);
+            console.error('Error al obtener comentarios por usuario:', error);
             throw error;
         }
     }

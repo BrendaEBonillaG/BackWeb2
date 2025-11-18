@@ -26,7 +26,6 @@ module.exports = function (dbinyectada) {
             const resultado = await bcrypt.compare(Password, data.Password);
 
             if (resultado === true) {
-                // ✅ OBTENER INFORMACIÓN COMPLETA DEL USUARIO PARA EL TOKEN
                 const usuarioCompleto = await db.uno('Usuario', data.IDAuth);
                 
                 if (!usuarioCompleto || usuarioCompleto.length === 0) {
@@ -35,20 +34,18 @@ module.exports = function (dbinyectada) {
 
                 const usuarioData = usuarioCompleto[0];
                 
-                // ✅ USAR LA NUEVA FUNCIÓN ESPECÍFICA PARA USUARIOS
                 const token = auth.asignarTokenUsuario({
-                    IDUsuario: usuarioData.IDUsuario,      // ✅ CRUCIAL para reseñas
-                    IDAuth: data.IDAuth,                   // ✅ Para compatibilidad
+                    IDUsuario: usuarioData.IDUsuario,     
+                    IDAuth: data.IDAuth,                 
                     Usuario: data.Usuario,
                     CorreoElectronico: usuarioData.CorreoElectronico,
                     Nombre: usuarioData.Nombre
-                    // Agregar otros campos que necesites
                 });
 
                 return {
                     token: token,
                     usuario: {
-                        IDUsuario: usuarioData.IDUsuario,  // ✅ Incluir IDUsuario en respuesta
+                        IDUsuario: usuarioData.IDUsuario, 
                         IDAuth: data.IDAuth,
                         Usuario: data.Usuario,
                         Nombre: usuarioData.Nombre,

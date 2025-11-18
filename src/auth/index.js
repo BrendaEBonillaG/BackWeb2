@@ -5,10 +5,8 @@ const error = require('../middleware/errors');
 const secret = config.jwt.secret;
 
 function asignarToken(data) {
-    // ✅ Asegurarse de que data incluya IDUsuario para las reseñas
     const payload = {
         ...data,
-        // Si data es un objeto de usuario, asegurar que tenga IDUsuario
         IDUsuario: data.IDUsuario || data.id || null
     };
     return jwt.sign(payload, secret);
@@ -54,21 +52,19 @@ function decodificarCabecera(req) {
     return decodificado;
 }
 
-// ✅ NUEVA FUNCIÓN: Específica para generar tokens de usuario
 function asignarTokenUsuario(usuario) {
     const payload = {
-        IDUsuario: usuario.IDUsuario,      // ✅ CRUCIAL para reseñas
-        IDAuth: usuario.IDAuth,            // ✅ Para compatibilidad existente
+        IDUsuario: usuario.IDUsuario,    
+        IDAuth: usuario.IDAuth,            
         CorreoElectronico: usuario.CorreoElectronico,
         Nombre: usuario.Nombre,
-        // ... otros campos que necesites
     };
     return jwt.sign(payload, secret);
 }
 
 module.exports = {
     asignarToken,
-    asignarTokenUsuario, // ✅ Exportar la nueva función
+    asignarTokenUsuario, 
     chequearAuthToken,
-    decodificarCabecera  // ✅ Exportar para usar en rutas
+    decodificarCabecera  
 };
