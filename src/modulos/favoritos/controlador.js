@@ -1,3 +1,4 @@
+const { logger } = require('../../utils/logger');
 const TABLA = 'Favoritos';
 
 module.exports = function (dbinyectada) {
@@ -9,18 +10,17 @@ module.exports = function (dbinyectada) {
 
     async function todos() {
         try {
-            console.log('🔍 Obteniendo todos los favoritos');
-            const favoritos = await db.todos(TABLA);
-            console.log(`✅ Favoritos encontrados: ${favoritos?.length || 0}`);
+            logger.start('favoritos-controller', 'Obteniendo todos los favoritos');
             
-            if (favoritos && favoritos.length > 0) {
-                console.log('📋 Primer favorito:', favoritos[0].dataValues);
-            }
+            const favoritos = await db.todos(TABLA);
+            
+            logger.success('favoritos-controller', 'Favoritos obtenidos exitosamente', {
+                total: favoritos?.length || 0
+            });
             
             return favoritos;
         } catch (error) {
-            console.error('❌ Error al obtener favoritos:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al obtener todos los favoritos', error);
             throw error;
         }
     }
@@ -29,45 +29,46 @@ module.exports = function (dbinyectada) {
         try {
             if (!id) {
                 const error = new Error('ID de favorito es requerido');
+                logger.error('favoritos-controller', 'Validación fallida en obtener favorito', error, { id });
                 error.status = 400;
                 throw error;
             }
+
+            logger.start('favoritos-controller', 'Obteniendo favorito por ID', { id });
             
-            console.log(`🔍 Obteniendo favorito con ID: ${id}`);
             const favorito = await db.uno(TABLA, id);
             
             if (!favorito || favorito.length === 0) {
                 const error = new Error('Favorito no encontrado');
+                logger.error('favoritos-controller', 'Favorito no encontrado', error, { id });
                 error.status = 404;
                 throw error;
             }
-            
-            console.log('✅ Favorito encontrado:', favorito[0]);
+
+            logger.success('favoritos-controller', 'Favorito obtenido exitosamente', { id });
             return favorito[0];
         } catch (error) {
-            console.error('❌ Error al obtener favorito:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al obtener favorito por ID', error, { id });
             throw error;
         }
     }
 
     async function agregar(body) {
         try {
-            // Validaciones
             if (!body.UsuarioFK || !body.LugarFK) {
                 const error = new Error('UsuarioFK y LugarFK son requeridos');
+                logger.error('favoritos-controller', 'Validación fallida en agregar favorito', error, { body });
                 error.status = 400;
                 throw error;
             }
-
-            console.log('➕ Agregando favorito:', body);
 
             const favoritoData = {
                 UsuarioFK: parseInt(body.UsuarioFK),
                 LugarFK: parseInt(body.LugarFK)
             };
 
-            // Verificar si ya existe el favorito
+            logger.start('favoritos-controller', 'Verificando favorito existente', favoritoData);
+
             const favoritoExistente = await db.query(TABLA, {
                 UsuarioFK: favoritoData.UsuarioFK,
                 LugarFK: favoritoData.LugarFK
@@ -75,19 +76,25 @@ module.exports = function (dbinyectada) {
 
             if (favoritoExistente) {
                 const error = new Error('Este lugar ya está en favoritos para este usuario');
-                error.status = 409; // ✅ 409 Conflict
+                logger.error('favoritos-controller', 'Favorito duplicado', error, favoritoData);
+                error.status = 409; 
                 throw error;
             }
+
+            logger.start('favoritos-controller', 'Agregando nuevo favorito', favoritoData);
 
             const resultado = await db.agregar(TABLA, favoritoData);
             
             const insertId = resultado?.IDFavoritos || resultado?.dataValues?.IDFavoritos;
-            console.log('✅ Favorito agregado exitosamente. IDFavoritos:', insertId);
+
+            logger.success('favoritos-controller', 'Favorito agregado exitosamente', {
+                ...favoritoData,
+                IDFavoritos: insertId
+            });
             
             return { ...resultado, IDFavoritos: insertId };
         } catch (error) {
-            console.error('❌ Error al agregar favorito:', error);
-            // ✅ IMPORTANTE: Solo relanzar el error original, NO crear uno nuevo
+            logger.error('favoritos-controller', 'Error al agregar favorito', error, { body });
             throw error;
         }
     }
@@ -96,70 +103,77 @@ module.exports = function (dbinyectada) {
         try {
             if (!body.UsuarioFK || !body.LugarFK) {
                 const error = new Error('UsuarioFK y LugarFK son requeridos para eliminar');
+                logger.error('favoritos-controller', 'Validación fallida en eliminar favorito', error, { body });
                 error.status = 400;
                 throw error;
             }
-
-            console.log('🗑️ Eliminando favorito:', body);
 
             const whereClause = {
                 UsuarioFK: parseInt(body.UsuarioFK),
                 LugarFK: parseInt(body.LugarFK)
             };
 
+            logger.start('favoritos-controller', 'Buscando favorito para eliminar', whereClause);
+
             const favoritoExistente = await db.query(TABLA, whereClause);
 
             if (!favoritoExistente) {
                 const error = new Error('Favorito no encontrado');
+                logger.error('favoritos-controller', 'Favorito no encontrado para eliminar', error, whereClause);
                 error.status = 404;
                 throw error;
             }
 
+            logger.start('favoritos-controller', 'Eliminando favorito', {
+                ...whereClause,
+                IDFavoritos: favoritoExistente.IDFavoritos
+            });
+
             const resultado = await db.eliminar(TABLA, favoritoExistente.IDFavoritos);
-            console.log('✅ Favorito eliminado exitosamente');
             
+            logger.success('favoritos-controller', 'Favorito eliminado exitosamente', {
+                ...whereClause,
+                affectedRows: resultado.affectedRows
+            });
+
             return resultado;
         } catch (error) {
-            console.error('❌ Error al eliminar favorito:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al eliminar favorito', error, { body });
             throw error;
         }
     }
 
-    // ✅ FUNCIÓN PRINCIPAL: Obtener lugares favoritos del usuario con información completa
     async function lugaresFavoritosPorUsuario(usuarioId) {
         try {
             if (!usuarioId) {
                 const error = new Error('ID de usuario es requerido');
+                logger.error('favoritos-controller', 'Validación fallida en obtener lugares favoritos', error, { usuarioId });
                 error.status = 400;
                 throw error;
             }
 
-            console.log(`🔍 Obteniendo lugares favoritos del usuario: ${usuarioId}`);
-            
-            // Obtener todos los favoritos del usuario
+            logger.start('favoritos-controller', 'Obteniendo lugares favoritos por usuario', { usuarioId });
+
             const todosFavoritos = await db.todos(TABLA);
             const favoritosUsuario = todosFavoritos.filter(fav => 
                 fav.UsuarioFK === parseInt(usuarioId)
             );
 
-            console.log(`✅ Favoritos del usuario encontrados: ${favoritosUsuario.length}`);
-
             if (favoritosUsuario.length === 0) {
+                logger.success('favoritos-controller', 'No se encontraron lugares favoritos para el usuario', {
+                    usuarioId,
+                    total: 0
+                });
                 return [];
             }
 
-            // Obtener información completa de los lugares favoritos
             const todosLugares = await db.todos('Lugar');
             const lugaresFavoritos = [];
 
             for (const favorito of favoritosUsuario) {
                 const lugar = todosLugares.find(l => l.IDLugar === favorito.LugarFK);
                 if (lugar) {
-                    // Obtener servicios del lugar
                     const serviciosLugar = await obtenerServiciosLugar(lugar.IDLugar);
-                    
-                    // Obtener fotos del lugar
                     const fotosLugar = await obtenerFotosLugar(lugar.IDLugar);
 
                     lugaresFavoritos.push({
@@ -167,23 +181,27 @@ module.exports = function (dbinyectada) {
                         servicios: serviciosLugar,
                         fotos: fotosLugar,
                         IDFavorito: favorito.IDFavoritos,
-                        fechaAgregado: favorito.createdAt || new Date() // Si tienes timestamps
+                        fechaAgregado: favorito.createdAt || new Date() 
                     });
                 }
             }
 
-            console.log(`📍 Lugares favoritos con información completa: ${lugaresFavoritos.length}`);
+            logger.success('favoritos-controller', 'Lugares favoritos obtenidos exitosamente', {
+                usuarioId,
+                total: lugaresFavoritos.length
+            });
+
             return lugaresFavoritos;
         } catch (error) {
-            console.error('❌ Error al obtener lugares favoritos:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al obtener lugares favoritos por usuario', error, { usuarioId });
             throw error;
         }
     }
 
-    // ✅ Función auxiliar: Obtener servicios de un lugar
     async function obtenerServiciosLugar(idLugar) {
         try {
+            logger.db('SELECT_SERVICIOS', 'Lugar_Servicio', { idLugar });
+            
             const todosServicios = await db.todos('Servicios');
             const todasRelaciones = await db.todos('Lugar_Servicio');
             
@@ -197,14 +215,15 @@ module.exports = function (dbinyectada) {
 
             return serviciosDelLugar;
         } catch (error) {
-            console.error('Error al obtener servicios del lugar:', error);
+            logger.error('favoritos-controller', 'Error al obtener servicios del lugar', error, { idLugar });
             return [];
         }
     }
 
-    // ✅ Función auxiliar: Obtener fotos de un lugar
     async function obtenerFotosLugar(idLugar) {
         try {
+            logger.db('SELECT_FOTOS', 'Fotos', { idLugar });
+            
             const todasFotos = await db.todos('Fotos');
             const fotosDelLugar = todasFotos
                 .filter(foto => foto.LugarFK === idLugar)
@@ -212,21 +231,21 @@ module.exports = function (dbinyectada) {
 
             return fotosDelLugar;
         } catch (error) {
-            console.error('Error al obtener fotos del lugar:', error);
+            logger.error('favoritos-controller', 'Error al obtener fotos del lugar', error, { idLugar });
             return [];
         }
     }
 
-    // ✅ Función para la página: Solo IDs de favoritos (más rápida)
     async function favoritosPorUsuario(usuarioId) {
         try {
             if (!usuarioId) {
                 const error = new Error('ID de usuario es requerido');
+                logger.error('favoritos-controller', 'Validación fallida en obtener favoritos por usuario', error, { usuarioId });
                 error.status = 400;
                 throw error;
             }
-
-            console.log(`🔍 Obteniendo IDs de favoritos del usuario: ${usuarioId}`);
+            
+            logger.start('favoritos-controller', 'Obteniendo favoritos por usuario', { usuarioId });
             
             const todosFavoritos = await db.todos(TABLA);
             const favoritosUsuario = todosFavoritos
@@ -236,27 +255,29 @@ module.exports = function (dbinyectada) {
                     LugarFK: fav.LugarFK,
                     UsuarioFK: fav.UsuarioFK
                 }));
-
-            console.log(`✅ IDs de favoritos del usuario: ${favoritosUsuario.length}`);
+            
+            logger.success('favoritos-controller', 'Favoritos por usuario obtenidos exitosamente', {
+                usuarioId,
+                total: favoritosUsuario.length
+            });
             
             return favoritosUsuario;
         } catch (error) {
-            console.error('❌ Error al obtener favoritos por usuario:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al obtener favoritos por usuario', error, { usuarioId });
             throw error;
         }
     }
 
-    // ✅ Función para verificar si un lugar es favorito (rápida)
     async function esFavorito(usuarioId, lugarId) {
         try {
             if (!usuarioId || !lugarId) {
                 const error = new Error('UsuarioID y LugarID son requeridos');
+                logger.error('favoritos-controller', 'Validación fallida en verificar favorito', error, { usuarioId, lugarId });
                 error.status = 400;
                 throw error;
             }
-
-            console.log(`🔍 Verificando si lugar ${lugarId} es favorito de usuario ${usuarioId}`);
+            
+            logger.start('favoritos-controller', 'Verificando si es favorito', { usuarioId, lugarId });
             
             const favorito = await db.query(TABLA, {
                 UsuarioFK: parseInt(usuarioId),
@@ -264,37 +285,45 @@ module.exports = function (dbinyectada) {
             });
 
             const esFav = !!favorito;
-            console.log(`✅ Es favorito: ${esFav}`);
+
+            logger.success('favoritos-controller', 'Verificación de favorito completada', {
+                usuarioId,
+                lugarId,
+                esFavorito: esFav,
+                IDFavorito: favorito?.IDFavoritos || null
+            });
             
             return { 
                 esFavorito: esFav,
                 IDFavorito: favorito?.IDFavoritos || null
             };
         } catch (error) {
-            console.error('❌ Error al verificar favorito:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al verificar favorito', error, { usuarioId, lugarId });
             throw error;
         }
     }
 
-    // ✅ Función para eliminar por IDFavorito (más eficiente)
     async function eliminarPorId(idFavorito) {
         try {
             if (!idFavorito) {
                 const error = new Error('ID de favorito es requerido');
+                logger.error('favoritos-controller', 'Validación fallida en eliminar favorito por ID', error, { idFavorito });
                 error.status = 400;
                 throw error;
             }
 
-            console.log(`🗑️ Eliminando favorito con ID: ${idFavorito}`);
+            logger.start('favoritos-controller', 'Eliminando favorito por ID', { idFavorito });
 
             const resultado = await db.eliminar(TABLA, idFavorito);
-            console.log('✅ Favorito eliminado exitosamente');
             
+            logger.success('favoritos-controller', 'Favorito eliminado por ID exitosamente', {
+                idFavorito,
+                affectedRows: resultado.affectedRows
+            });
+
             return resultado;
         } catch (error) {
-            console.error('❌ Error al eliminar favorito por ID:', error);
-            // ✅ SOLO propaga el error, NO crees uno nuevo
+            logger.error('favoritos-controller', 'Error al eliminar favorito por ID', error, { idFavorito });
             throw error;
         }
     }
