@@ -1,4 +1,4 @@
-const { logger } = require('../../utils/logger'); // ✅ IMPORTAR LOGGER
+const { logger } = require('../../utils/logger'); 
 const TABLA = 'Comentarios';
 
 module.exports = function (dbinyectada) {
@@ -111,8 +111,7 @@ module.exports = function (dbinyectada) {
                 ResenaFK: parseInt(body.ResenaFK),
                 Activo: true
             };
-
-            // Verificar si la reseña existe
+ 
             logger.db('SELECT_ONE', 'Resenas', { id: comentarioData.ResenaFK });
             const reseñaExistente = await db.uno('Resenas', comentarioData.ResenaFK);
             
