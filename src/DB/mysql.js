@@ -7,7 +7,7 @@ const { Fotos } = require('./modelos/fotos.js');
 const { Resenas } = require('./modelos/resenas.js');
 const { Comentarios } = require('./modelos/comentarios.js');
 const { Favoritos } = require('./modelos/favoritos.js');
-const { logger } = require('./utils/logger'); // ✅ IMPORTAR LOGGER
+const { logger } = require('../utils/logger'); // ✅ IMPORTAR LOGGER
 
 async function todos(tabla) {
     try {
