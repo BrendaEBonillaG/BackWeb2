@@ -2,12 +2,10 @@ const app = require('./app');
 const { logger } = require('./utils/logger');
 const { requestLogger, errorLogger } = require('./middleware/requestLogger');
 
-// ✅ Aplicar middleware de logging de requests
 app.use(requestLogger);
 
 const PORT = app.get('port') || 4000;
 
-// Manejo de errores no capturados
 process.on('uncaughtException', (error) => {
     logger.error('process', 'Excepción no capturada', error, {
         type: 'uncaughtException'
@@ -23,7 +21,6 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
 });
 
-// Iniciar servidor
 const server = app.listen(PORT, () => {
     logger.info('server', `Servidor iniciado exitosamente`, {
         port: PORT,
@@ -31,13 +28,11 @@ const server = app.listen(PORT, () => {
         pid: process.pid
     });
     
-    console.log("🚀 Servidor escuchando en el puerto", PORT);
+    console.log("Servidor escuchando en el puerto", PORT);
 });
 
-// ✅ Aplicar middleware de logging de errores (debe ir después de las rutas)
 app.use(errorLogger);
 
-// Manejo de cierre graceful
 process.on('SIGTERM', () => {
     logger.info('server', 'Recibida señal SIGTERM, cerrando servidor gracefulmente');
     server.close(() => {

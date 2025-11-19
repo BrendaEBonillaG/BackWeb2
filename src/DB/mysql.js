@@ -7,11 +7,11 @@ const { Fotos } = require('./modelos/fotos.js');
 const { Resenas } = require('./modelos/resenas.js');
 const { Comentarios } = require('./modelos/comentarios.js');
 const { Favoritos } = require('./modelos/favoritos.js');
-const { logger } = require('../utils/logger'); // ✅ IMPORTAR LOGGER
+const { logger } = require('../utils/logger');
 
 async function todos(tabla) {
     try {
-        logger.db('SELECT_ALL', tabla); // ✅ LOG DE INICIO
+        logger.db('SELECT_ALL', tabla); 
         
         let modelo;
         switch(tabla) {
@@ -31,14 +31,14 @@ async function todos(tabla) {
 
         const resultados = await modelo.findAll();
 
-        logger.db('SELECT_ALL_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+        logger.db('SELECT_ALL_SUCCESS', tabla, {
             count: resultados?.length || 0,
             tabla: tabla
         });
 
         return resultados;
     } catch (error) {
-        logger.db('SELECT_ALL_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('SELECT_ALL_ERROR', tabla, { 
             error: error.message,
             stack: error.stack
         });
@@ -48,7 +48,7 @@ async function todos(tabla) {
 
 async function uno(tabla, id) {
     try {
-        logger.db('SELECT_ONE', tabla, { id }); // ✅ LOG DE INICIO
+        logger.db('SELECT_ONE', tabla, { id }); 
         
         let modelo;
         let campoId;
@@ -101,18 +101,18 @@ async function uno(tabla, id) {
         const resultado = await modelo.findOne({ where: whereClause });
         
         if (!resultado) {
-            logger.db('SELECT_ONE_NOT_FOUND', tabla, { id }); // ✅ LOG DE NO ENCONTRADO
+            logger.db('SELECT_ONE_NOT_FOUND', tabla, { id }); 
             return null;
         }
 
-        logger.db('SELECT_ONE_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+        logger.db('SELECT_ONE_SUCCESS', tabla, { 
             id: id,
             encontrado: true
         });
         
         return [resultado.dataValues];
     } catch (error) {
-        logger.db('SELECT_ONE_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('SELECT_ONE_ERROR', tabla, { 
             error: error.message,
             id: id,
             stack: error.stack
@@ -127,7 +127,7 @@ async function agregar(tabla, data) {
                         data.IDLugar || data.IDFoto || data.IDServicios || data.IDFavoritos;
         const operation = isUpdate ? 'UPDATE' : 'INSERT';
         
-        logger.db(operation, tabla, { // ✅ LOG DE INICIO
+        logger.db(operation, tabla, { 
             data: isUpdate ? { id: Object.values(data)[0], operacion: 'actualización' } : { operacion: 'inserción' }
         });
 
@@ -147,7 +147,6 @@ async function agregar(tabla, data) {
                 throw new Error('Tabla no encontrada');
         }
 
-        // ✅ LÓGICA PARA ACTUALIZACIÓN DE RESEÑAS
         if (data.IDResenas && tabla === 'Resenas') {
             logger.db('UPDATE_SPECIFIC', 'Resenas', { id: data.IDResenas });
             
@@ -159,7 +158,7 @@ async function agregar(tabla, data) {
                 where: { IDResenas: data.IDResenas } 
             });
 
-            logger.db('UPDATE_SUCCESS', 'Resenas', { // ✅ LOG DE ÉXITO
+            logger.db('UPDATE_SUCCESS', 'Resenas', { 
                 id: data.IDResenas,
                 affectedRows: resultado[0]
             });
@@ -167,7 +166,6 @@ async function agregar(tabla, data) {
             return reseñaActualizada;
         }
         
-        // ✅ LÓGICA PARA ACTUALIZACIÓN DE COMENTARIOS
         if (data.IDComentarios && tabla === 'Comentarios') {
             logger.db('UPDATE_SPECIFIC', 'Comentarios', { id: data.IDComentarios });
             
@@ -179,15 +177,14 @@ async function agregar(tabla, data) {
                 where: { IDComentarios: data.IDComentarios } 
             });
 
-            logger.db('UPDATE_SUCCESS', 'Comentarios', { // ✅ LOG DE ÉXITO
+            logger.db('UPDATE_SUCCESS', 'Comentarios', { 
                 id: data.IDComentarios,
                 affectedRows: resultado[0]
             });
 
             return comentarioActualizado;
         }
-        
-        // ✅ LÓGICA CORREGIDA PARA Lugar_Servicio
+      
         if (tabla === 'Lugar_Servicio') {
             logger.db('FIND_OR_CREATE', 'Lugar_Servicio', {
                 IDLugar: data.IDLugar,
@@ -202,7 +199,7 @@ async function agregar(tabla, data) {
                 defaults: data
             });
 
-            logger.db('FIND_OR_CREATE_RESULT', 'Lugar_Servicio', { // ✅ LOG DE RESULTADO
+            logger.db('FIND_OR_CREATE_RESULT', 'Lugar_Servicio', { 
                 created: created,
                 IDLugar: data.IDLugar,
                 IDServicio: data.IDServicio
@@ -211,20 +208,18 @@ async function agregar(tabla, data) {
             return resultado;
         }
 
-        // ✅ LÓGICA PARA Auth (upsert)
         if (tabla === 'Auth') {
             logger.db('UPSERT', 'Auth', { IDAuth: data.IDAuth });
             
             const [resultado, created] = await modelo.upsert(data);
 
-            logger.db('UPSERT_RESULT', 'Auth', { // ✅ LOG DE RESULTADO
+            logger.db('UPSERT_RESULT', 'Auth', { 
                 created: created,
                 IDAuth: data.IDAuth
             });
 
             return resultado;
         } 
-        // ✅ LÓGICAS DE ACTUALIZACIÓN PARA OTRAS TABLAS
         else if (data.IDUsuario && tabla === 'Usuario') {
             logger.db('UPDATE', 'Usuario', { id: data.IDUsuario });
             
@@ -295,7 +290,6 @@ async function agregar(tabla, data) {
 
             return resultado;
         }
-        // ✅ CREACIÓN NORMAL para otras tablas
         else {
             logger.db('INSERT', tabla, { datos: 'nuevo registro' });
             
@@ -306,7 +300,7 @@ async function agregar(tabla, data) {
                            resultado?.IDFoto || resultado?.IDServicios || 
                            resultado?.IDFavoritos;
 
-            logger.db('INSERT_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+            logger.db('INSERT_SUCCESS', tabla, { 
                 id: insertId,
                 operacion: 'creación exitosa'
             });
@@ -314,7 +308,7 @@ async function agregar(tabla, data) {
             return resultado;
         }
     } catch (error) {
-        logger.db('OPERATION_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('OPERATION_ERROR', tabla, { 
             error: error.message,
             data: data,
             stack: error.stack
@@ -325,7 +319,7 @@ async function agregar(tabla, data) {
 
 async function eliminar(tabla, id) {
     try {
-        logger.db('DELETE', tabla, { id }); // ✅ LOG DE INICIO
+        logger.db('DELETE', tabla, { id });
         
         let modelo;
         let campoId;
@@ -377,14 +371,14 @@ async function eliminar(tabla, id) {
 
         const resultado = await modelo.destroy({ where: whereClause });
 
-        logger.db('DELETE_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+        logger.db('DELETE_SUCCESS', tabla, { 
             id: id,
             affectedRows: resultado
         });
 
         return { affectedRows: resultado };
     } catch (error) {
-        logger.db('DELETE_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('DELETE_ERROR', tabla, { 
             error: error.message,
             id: id,
             stack: error.stack
@@ -417,7 +411,7 @@ async function eliminarLugarServicio(where) {
 
 async function query(tabla, where) {
     try {
-        logger.db('QUERY', tabla, { condiciones: where }); // ✅ LOG DE INICIO
+        logger.db('QUERY', tabla, { condiciones: where }); 
         
         let modelo;
         switch(tabla) {
@@ -438,18 +432,18 @@ async function query(tabla, where) {
         const resultado = await modelo.findOne({ where: where });
         
         if (!resultado) {
-            logger.db('QUERY_NOT_FOUND', tabla, { condiciones: where }); // ✅ LOG DE NO ENCONTRADO
+            logger.db('QUERY_NOT_FOUND', tabla, { condiciones: where }); 
             return null;
         }
 
-        logger.db('QUERY_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+        logger.db('QUERY_SUCCESS', tabla, { 
             condiciones: where,
             encontrado: true
         });
         
         return resultado.dataValues;
     } catch (error) {
-        logger.db('QUERY_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('QUERY_ERROR', tabla, { 
             error: error.message,
             where: where,
             stack: error.stack
@@ -460,7 +454,7 @@ async function query(tabla, where) {
 
 async function buscar(tabla, where) {
     try {
-        logger.db('SEARCH', tabla, { condiciones: where }); // ✅ LOG DE INICIO
+        logger.db('SEARCH', tabla, { condiciones: where }); 
         
         let modelo;
         switch(tabla) {
@@ -480,14 +474,14 @@ async function buscar(tabla, where) {
         
         const resultados = await modelo.findAll({ where: where });
 
-        logger.db('SEARCH_SUCCESS', tabla, { // ✅ LOG DE ÉXITO
+        logger.db('SEARCH_SUCCESS', tabla, { 
             condiciones: where,
             count: resultados.length
         });
 
         return resultados.map(item => item.dataValues);
     } catch (error) {
-        logger.db('SEARCH_ERROR', tabla, { // ✅ LOG DE ERROR
+        logger.db('SEARCH_ERROR', tabla, { 
             error: error.message,
             where: where,
             stack: error.stack

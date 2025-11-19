@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const auth = require('../../auth');
-const { logger } = require('../../utils/logger'); // ✅ IMPORTAR LOGGER
+const { logger } = require('../../utils/logger'); 
 const TABLA = 'Auth';
 
 module.exports = function (dbinyectada) {
@@ -19,7 +19,6 @@ module.exports = function (dbinyectada) {
 
             const { Usuario, Password } = body;
 
-            // Validaciones
             if (!Usuario || !Password) {
                 const error = new Error('Usuario y Password son requeridos');
                 logger.error('auth', 'Validación fallida en login', error, {
@@ -29,7 +28,6 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Buscar usuario en Auth
             logger.db('QUERY', 'Auth', { usuario: Usuario });
             const data = await db.query(TABLA, { Usuario: Usuario });
          
@@ -46,14 +44,12 @@ module.exports = function (dbinyectada) {
                 usuario: data.Usuario
             });
 
-            // Verificar contraseña
             logger.start('auth', 'Verificando contraseña', { IDAuth: data.IDAuth });
             const resultado = await bcrypt.compare(Password, data.Password);
 
             if (resultado === true) {
                 logger.success('auth', 'Contraseña verificada correctamente', { IDAuth: data.IDAuth });
 
-                // Obtener información completa del usuario
                 logger.db('SELECT_ONE', 'Usuario', { id: data.IDAuth });
                 const usuarioCompleto = await db.uno('Usuario', data.IDAuth);
                 
@@ -71,7 +67,6 @@ module.exports = function (dbinyectada) {
                     nombre: usuarioData.Nombre
                 });
                 
-                // Generar token JWT
                 logger.start('auth', 'Generando token JWT', {
                     IDUsuario: usuarioData.IDUsuario,
                     IDAuth: data.IDAuth
@@ -132,7 +127,6 @@ module.exports = function (dbinyectada) {
                 tienePassword: !!data.password
             });
 
-            // Validaciones
             if (!data.id) {
                 const error = new Error('ID es requerido');
                 logger.error('auth', 'Validación fallida en agregar credenciales', error);
@@ -144,7 +138,6 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
-            // Preparar datos para Auth
             const authData = {
                 IDAuth: data.id,
             };
@@ -159,7 +152,6 @@ module.exports = function (dbinyectada) {
                 logger.success('auth', 'Contraseña hasheada', { IDAuth: data.id });
             }
 
-            // Guardar en base de datos
             logger.db('INSERT', 'Auth', { IDAuth: data.id });
             const resultado = await db.agregar(TABLA, authData);
 
@@ -179,7 +171,6 @@ module.exports = function (dbinyectada) {
         }
     }
 
-    // ✅ NUEVA FUNCIÓN: Verificar token (útil para debugging)
     async function verificarToken(req) {
         try {
             logger.start('auth', 'Verificando token JWT');
@@ -202,6 +193,6 @@ module.exports = function (dbinyectada) {
     return {
         agregar,
         login,
-        verificarToken // ✅ NUEVA FUNCIÓN EXPORTADA
+        verificarToken 
     };
 };

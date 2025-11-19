@@ -2,9 +2,8 @@ const { httpLogger } = require('../utils/logger');
 
 const requestLogger = (req, res, next) => {
     const start = Date.now();
-    
-    // Log de request entrante
-    httpLogger.info('📥 REQUEST RECIBIDA', {
+
+    httpLogger.info('REQUEST RECIBIDA', {
         method: req.method,
         url: req.url,
         ip: req.ip,
@@ -12,12 +11,11 @@ const requestLogger = (req, res, next) => {
         contentType: req.get('Content-Type')
     });
 
-    // Interceptar response para loggear cuando termine
     const originalSend = res.send;
     res.send = function(data) {
         const duration = Date.now() - start;
         
-        httpLogger.info('📤 RESPONSE ENVIADA', {
+        httpLogger.info('RESPONSE ENVIADA', {
             method: req.method,
             url: req.url,
             statusCode: res.statusCode,
