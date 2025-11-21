@@ -36,6 +36,18 @@ Lugar.init({
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    Latitud: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true
+    },
+    Longitud: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true
+    },
+    URLMapa: {
+        type: DataTypes.STRING(500),
+        allowNull: true
+    },
     Activo: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

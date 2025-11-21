@@ -32,22 +32,24 @@ IDAuth INT PRIMARY KEY,
 Usuario VARCHAR(30) NOT NULL,
 Password VARCHAR(255) NOT NULL -- mejor para hash
 );
-
--- Tabla de servicios (pre-cargados)
-CREATE TABLE Servicios (
-  IDServicios INT AUTO_INCREMENT PRIMARY KEY,
-  Nombre VARCHAR(50) NOT NULL,
-  Logo VARCHAR(255) NULL, -- ruta o URL del logo
-  Activo TINYINT(1) NOT NULL DEFAULT 1
-);
-
--- Tabla de lugares
+-- Tabla de lugares (ACTUALIZADA)
 CREATE TABLE Lugar(
   IDLugar INT AUTO_INCREMENT PRIMARY KEY,
   Nombre VARCHAR(100) NOT NULL,
   Direccion VARCHAR(200) NOT NULL,
   Info VARCHAR(400) NOT NULL,
   Tipo VARCHAR(50) NOT NULL, -- Hospedaje o turístico
+  Latitud DECIMAL(10, 8) NULL, -- Coordenada latitud para el mapa
+  Longitud DECIMAL(11, 8) NULL, -- Coordenada longitud para el mapa
+  URLMapa VARCHAR(500) NULL, -- URL embed de Google Maps
+  Activo TINYINT(1) NOT NULL DEFAULT 1
+);
+
+-- Tabla de servicios (pre-cargados)
+CREATE TABLE Servicios (
+  IDServicios INT AUTO_INCREMENT PRIMARY KEY,
+  Nombre VARCHAR(50) NOT NULL,
+  Logo VARCHAR(255) NULL, -- ruta o URL del logo
   Activo TINYINT(1) NOT NULL DEFAULT 1
 );
 
@@ -142,3 +144,13 @@ INSERT INTO Servicios (Nombre, Logo, Activo) VALUES
 ('Acceso para Silla de Ruedas', '/assets/iconos/wheelchair.png', 1),
 ('Habitaciones Adaptadas', '/assets/iconos/accessible.png', 1),
 ('Ascensor', '/assets/iconos/elevator.png', 1);
+
+
+
+-- Insertar lugares de ejemplo con coordenadas y mapas
+INSERT INTO Lugar (Nombre, Direccion, Info, Tipo, Latitud, Longitud, URLMapa, Activo) VALUES
+('Playa del Sol', 'Av. Costera 123, Acapulco', 'Hermosa playa con arena blanca y aguas cristalinas', 'Turistico', 16.8531086, -99.8236533, 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3821.234567890123!2d-99.8236533!3d16.8531086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDUxJzExLjIiTiA5OcKwNDknMjUuMiJX!5e0!3m2!1ses!2smx!4v1677207420000', 1),
+
+('Museo de Arte Moderno', 'Paseo de la Reforma 123, CDMX', 'Museo con exposiciones nacionales e internacionales', 'Turistico', 19.4326077, -99.1332080, 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3762.500904854035!2d-99.1332080!3d19.4326077!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ff38d1a25e9d%3A0xc8c4b05f0e712fe9!2sMuseo%20de%20Arte%20Moderno!5e0!3m2!1ses!2smx!4v1677207420000', 1),
+
+('Hotel Riviera', 'Av. Insurgentes 456, CDMX', 'Hotel 5 estrellas con todas las comodidades', 'Hospedaje', 19.4260451, -99.1618033, 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3762.7841841520737!2d-99.1618033!3d19.4260451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ffc51d89a5b3%3A0x9f6d094df233f17!2sHotel%20Riviera!5e0!3m2!1ses!2smx!4v1677207420000', 1);

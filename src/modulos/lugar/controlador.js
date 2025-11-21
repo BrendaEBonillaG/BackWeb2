@@ -68,6 +68,26 @@ module.exports = function (dbinyectada) {
                 throw error;
             }
 
+            // Validar coordenadas si se proporcionan
+            if (body.Latitud && isNaN(parseFloat(body.Latitud))) {
+                const error = new Error('La latitud debe ser un número válido');
+                logger.error('lugar-controller', 'Validación fallida - latitud inválida', error, { latitud: body.Latitud });
+                throw error;
+            }
+
+            if (body.Longitud && isNaN(parseFloat(body.Longitud))) {
+                const error = new Error('La longitud debe ser un número válido');
+                logger.error('lugar-controller', 'Validación fallida - longitud inválida', error, { longitud: body.Longitud });
+                throw error;
+            }
+
+            // Validar URL del mapa si se proporciona
+            if (body.URLMapa && !isValidURL(body.URLMapa)) {
+                const error = new Error('La URL del mapa no es válida');
+                logger.error('lugar-controller', 'Validación fallida - URL de mapa inválida', error, { urlMapa: body.URLMapa });
+                throw error;
+            }
+
             if (tipoNormalizado === 'hospedaje') {
                 if (!body.servicios || !Array.isArray(body.servicios) || body.servicios.length === 0) {
                     const error = new Error('Los lugares de tipo "Hospedaje" deben tener al menos un servicio');
@@ -117,6 +137,17 @@ module.exports = function (dbinyectada) {
                 Activo: body.Activo !== undefined ? body.Activo : true
             };
 
+            // Agregar campos del mapa si se proporcionan
+            if (body.Latitud !== undefined) {
+                lugar.Latitud = parseFloat(body.Latitud);
+            }
+            if (body.Longitud !== undefined) {
+                lugar.Longitud = parseFloat(body.Longitud);
+            }
+            if (body.URLMapa !== undefined) {
+                lugar.URLMapa = body.URLMapa.trim();
+            }
+
             if (body.IDLugar && body.IDLugar > 0) {
                 lugar.IDLugar = body.IDLugar;
             }
@@ -140,7 +171,9 @@ module.exports = function (dbinyectada) {
 
             logger.success('lugar-controller', 'Lugar guardado exitosamente', { 
                 IDLugar: insertId,
-                tipo: tipoNormalizado 
+                tipo: tipoNormalizado,
+                tieneCoordenadas: !!(body.Latitud && body.Longitud),
+                tieneMapa: !!body.URLMapa
             });
 
             if (tipoNormalizado === 'hospedaje' && body.servicios && Array.isArray(body.servicios)) {
@@ -469,6 +502,16 @@ module.exports = function (dbinyectada) {
         } catch (error) {
             logger.error('lugar-controller', 'Error al obtener fotos del lugar', error, { idLugar });
             throw new Error(`Error al obtener fotos del lugar: ${error.message}`);
+        }
+    }
+
+    // Función auxiliar para validar URLs
+    function isValidURL(string) {
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
         }
     }
 
