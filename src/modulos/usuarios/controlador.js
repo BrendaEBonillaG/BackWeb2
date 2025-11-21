@@ -1,12 +1,83 @@
 const auth = require('../auth');
 const { logger } = require('../../utils/logger');
 const error = require('../../middleware/errors');
+const fs = require('fs');
+const path = require('path');
 const TABLA = 'Usuario';
 
 module.exports = function (dbinyectada) {
     let db = dbinyectada;
     if(!db){
         db = require('../../DB/mysql');
+    }
+
+    // ✅ CONFIGURACIÓN DE CARPETA DE FOTOS
+    const FOTOS_DIR = path.join(__dirname, '../../../uploads/perfiles');
+    
+    // ✅ CREAR CARPETA SI NO EXISTE
+    if (!fs.existsSync(FOTOS_DIR)) {
+        fs.mkdirSync(FOTOS_DIR, { recursive: true });
+        logger.db('DIRECTORY_CREATED', 'FotosPerfil', { path: FOTOS_DIR });
+    }
+
+    // ✅ FUNCIÓN PARA GUARDAR FOTO
+    async function guardarFoto(imagenBase64, idUsuario) {
+        try {
+            // Verificar si es una imagen base64
+            if (!imagenBase64 || !imagenBase64.startsWith('data:image/')) {
+                return null;
+            }
+
+            // Extraer información de la imagen
+            const matches = imagenBase64.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
+            if (!matches || matches.length !== 3) {
+                throw new Error('Formato de imagen base64 inválido');
+            }
+
+            const extension = matches[1]; // jpeg, png, etc.
+            const imageBuffer = Buffer.from(matches[2], 'base64');
+            
+            // Validar tamaño (máximo 5MB)
+            if (imageBuffer.length > 5 * 1024 * 1024) {
+                throw new Error('La imagen no debe exceder 5MB');
+            }
+
+            // Generar nombre único para el archivo
+            const nombreArchivo = `perfil_${idUsuario}_${Date.now()}.${extension}`;
+            const rutaCompleta = path.join(FOTOS_DIR, nombreArchivo);
+
+            // Guardar archivo
+            fs.writeFileSync(rutaCompleta, imageBuffer);
+            
+            logger.db('PHOTO_SAVED', 'Usuario', {
+                idUsuario,
+                archivo: nombreArchivo,
+                tamaño: imageBuffer.length
+            });
+
+            // Retornar ruta relativa para guardar en BD
+            return `/uploads/perfiles/${nombreArchivo}`;
+
+        } catch (error) {
+            logger.error('usuarios-controller', 'Error al guardar foto', error, { idUsuario });
+            throw new Error(`Error al guardar foto: ${error.message}`);
+        }
+    }
+
+    // ✅ FUNCIÓN PARA ELIMINAR FOTO ANTIGUA
+    async function eliminarFotoAntigua(rutaFoto) {
+        try {
+            if (rutaFoto && !rutaFoto.includes('unsplash.com') && rutaFoto.startsWith('/uploads/')) {
+                const rutaCompleta = path.join(__dirname, '../../..', rutaFoto);
+                if (fs.existsSync(rutaCompleta)) {
+                    fs.unlinkSync(rutaCompleta);
+                    logger.db('PHOTO_DELETED', 'Usuario', { archivo: rutaFoto });
+                }
+            }
+        } catch (error) {
+            logger.error('usuarios-controller', 'Error al eliminar foto antigua', error, { rutaFoto });
+            // No lanzar error para no interrumpir el proceso principal
+        }
     }
 
     async function todos() {
@@ -103,6 +174,39 @@ module.exports = function (dbinyectada) {
                 Foto: body.Foto || null,
                 Activo: body.Activo !== undefined ? body.Activo : 1
             };
+
+            // ✅ PROCESAR FOTO SI SE PROPORCIONA (solo para actualizaciones)
+            if (body.Foto && body.Foto.startsWith('data:image/') && body.IDUsuario) {
+                try {
+                    logger.start('usuarios-controller', 'Procesando foto de perfil', { 
+                        IDUsuario: body.IDUsuario 
+                    });
+
+                    // Obtener foto anterior para eliminarla después
+                    const usuarioExistente = await db.uno(TABLA, body.IDUsuario);
+                    const fotoAnterior = usuarioExistente?.[0]?.Foto;
+
+                    // Guardar nueva foto
+                    usuario.Foto = await guardarFoto(body.Foto, body.IDUsuario);
+                    
+                    logger.success('usuarios-controller', 'Foto de perfil procesada', {
+                        IDUsuario: body.IDUsuario,
+                        nuevaFoto: usuario.Foto
+                    });
+
+                    // Eliminar foto anterior si existe
+                    if (fotoAnterior) {
+                        await eliminarFotoAntigua(fotoAnterior);
+                    }
+
+                } catch (fotoError) {
+                    logger.error('usuarios-controller', 'Error al procesar foto', fotoError, { 
+                        IDUsuario: body.IDUsuario 
+                    });
+                    // No lanzar error para permitir que continúe sin foto
+                    usuario.Foto = null;
+                }
+            }
             
             if (body.IDUsuario && body.IDUsuario > 0) {
                 usuario.IDUsuario = body.IDUsuario;
@@ -119,7 +223,8 @@ module.exports = function (dbinyectada) {
             logger.success('usuarios-controller', 'Usuario guardado exitosamente', {
                 IDUsuario: insertId,
                 Nombre: usuario.Nombre,
-                Correo: usuario.Correo
+                Correo: usuario.Correo,
+                tieneFoto: !!usuario.Foto
             });
 
             if (body.Usuario || body.Password) {
@@ -168,6 +273,20 @@ module.exports = function (dbinyectada) {
             logger.start('usuarios-controller', 'Eliminando usuario', { 
                 IDUsuario: body.IDUsuario 
             });
+            
+            // ✅ ELIMINAR FOTO DEL USUARIO ANTES DE BORRAR EL REGISTRO
+            try {
+                const usuario = await db.uno(TABLA, body.IDUsuario);
+                const fotoUsuario = usuario?.[0]?.Foto;
+                if (fotoUsuario) {
+                    await eliminarFotoAntigua(fotoUsuario);
+                }
+            } catch (fotoError) {
+                logger.error('usuarios-controller', 'Error al eliminar foto del usuario', fotoError, { 
+                    IDUsuario: body.IDUsuario 
+                });
+                // Continuar con la eliminación aunque falle la eliminación de la foto
+            }
             
             const resultado = await db.eliminar(TABLA, body.IDUsuario);
             
