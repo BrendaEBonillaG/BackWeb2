@@ -89,3 +89,65 @@ INSERT INTO Lugar_Servicio (IDLugar, IDServicio) VALUES (6, 1);  -- Wi-Fi Gratui
 INSERT INTO Lugar_Servicio (IDLugar, IDServicio) VALUES (6, 2);  -- Estacionamiento
 INSERT INTO Lugar_Servicio (IDLugar, IDServicio) VALUES (6, 3);  -- Alberca
 INSERT INTO Lugar_Servicio (IDLugar, IDServicio) VALUES (6, 9);  -- Gimnasio
+
+
+
+-- Hotel Fiesta Inn (IDLugar = 6)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://image-tc.galaxy.tf/wijpeg-c98wpv1nmscu65k4j53bqksg/fiesta-inn-monterrey-fundidora_photo.jpg', 6),
+('https://images.trvl-media.com/lodging/4000000/3710000/3701200/3701160/3bdb3c48.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill', 6),
+('https://image-tc.galaxy.tf/wijpeg-4xo704cove36fvnegitf5r3p4/68054014-fiesta-inn-monterrey-fundidora-5616x3744-result.jpg', 6);
+
+-- Hotel Gamma (IDLugar = 7)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://cf.bstatic.com/xdata/images/hotel/max1024x768/351153408.jpg?k=dca887d7ab8f40b4c572418d627ece656cbafdbe409c3814b943876e875d2008&o=', 7),
+('https://images.trvl-media.com/lodging/10000000/9850000/9844900/9844885/b9a5c4c9.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill', 7),
+('https://image-tc.galaxy.tf/wijpeg-cgck35q9hnwexypmhbhkltsf2/_photo.jpg', 7);
+
+-- Hotel NH (IDLugar = 8)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://cf.bstatic.com/xdata/images/hotel/max1024x768/656714966.jpg?k=92620a216d410a7ba8b979d372692d84d10efb69e21f2640f538ea00a49f1dee&o=', 8),
+('https://images.trvl-media.com/lodging/20000000/19810000/19800500/19800411/3b57d10c.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill', 8),
+('https://mecainter.com/wp-content/uploads/2023/04/NH-Collection-Monterrey-San-Pedro-01.png', 8);
+
+-- Hotel Krystal (IDLugar = 10)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://imgcy.trivago.com/c_fill,d_dummy.jpeg,e_sharpen:60,f_auto,h_627,q_auto,w_1200/hotelier-images/88/7a/434e48185873c07e8ba8be4e066a0fc9d91d20f32dfb5e72ddf839065227.jpeg', 10),
+('https://images.trvl-media.com/lodging/16000000/15500000/15490100/15490056/74cf713c.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill', 10),
+('https://ocvmty.com.mx/wp-content/uploads/Lobby_1.jpg', 10);
+
+-- Hotel Galería MTY (IDLugar = 9)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://res.cloudinary.com/itermotus/f_auto,w_1200,h_800,c_fit/assets/galeriaplazahotels/monterrey/general/exterior-3.jpg', 9),
+('https://res.cloudinary.com/itermotus/f_auto,w_992,h_480,c_fill,g_auto,dpr_2/assets/galeriaplazahotels/hotels/monterrey.jpg', 9),
+('https://images.trvl-media.com/lodging/87000000/86150000/86146300/86146216/06d90776.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill', 9);
+
+-- Fundidora (IDLugar = 1)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://media.admagazine.com/photos/67eca5c650bed541eea0b131/master/w_1600%2Cc_limit/IMG_9184.png', 1),
+('https://escapadas.mexicodesconocido.com.mx/wp-content/uploads/2020/10/120238810_4103759992984031_8247658761315465946_o.jpg', 1),
+('https://www.nomada.news/wp-content/uploads/2021/12/parque-fundidora.jpg', 1);
+
+-- Chipinque (IDLugar = 2)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://mvsnoticias.com/u/fotografias/m/2023/9/26/f960x540-564940_639015_5050.jpg', 2),
+('https://visitmexico.com/media/usercontent/6886d984e4344-chipinque-3_gmxdot_jpg', 2),
+('https://dynamic-media-cdn.tripadvisor.com/media/photo-o/2b/c2/ae/34/caption.jpg?w=1200&h=-1&s=1', 2);
+
+-- Barrio Antiguo (IDLugar = 3)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://cdn2.telediario.mx/uploads/media/2024/08/18/barrio-antiguo-jeronimo-villarreal_0_71_1200_758.jpg', 3),
+('https://cdn.milenio.com/uploads/media/2023/06/15/jueves-entregado-distintivo-barrio-magico.jpg', 3),
+('https://www.entornoturistico.com/wp-content/uploads/2023/01/Mercado-Barrio-Antiguo.jpg', 3);
+
+-- Museo Marco (IDLugar = 4)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://es.artealdia.com/var/artealdia_com/storage/images/noticias/el-marco-celebra-sus-veinticinco-anos/568709-1-esl-AR/El-MARCO-celebra-sus-veinticinco-anos_full.jpg', 4),
+('https://arquine.com/wp-content/uploads/2024/02/5V3A1998-web.jpg', 4),
+('https://www.legorreta.mx/fotos/proyecto_foto/605100820092037.jpg', 4);
+
+-- Museo Historia Mexicana (IDLugar = 5)
+INSERT INTO Fotos (Foto, LugarFK) VALUES
+('https://www.3museos.com/wp-content/uploads/2015/10/fachada_mhm_1.jpg', 5),
+('https://www.3museos.com/wp-content/uploads/2015/05/DSC_6504-1024x678.jpg', 5),
+('https://cdn.mexicodestinos.com/lugares/museo-historia-mexicana-monterrey-galeria.jpg', 5);

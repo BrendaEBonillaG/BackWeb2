@@ -10,6 +10,7 @@ router.get('/tipo/:tipo', porTipo);
 router.get('/servicios/todos', obtenerTodosServicios);
 router.get('/servicios/:serviciosIds', porServicios);
 router.get('/:id/servicios', obtenerServiciosLugar);
+router.get('/:id/fotos', obtenerFotosLugar);
 router.post('/', agregar);
 router.post('/:id/servicios', agregarServicioLugar);
 router.put('/', eliminar);
@@ -39,6 +40,16 @@ async function porServicios(req, res, next) {
 async function obtenerServiciosLugar(req, res, next) {
     const servicios = await controlador.obtenerServiciosLugar(req.params.id);
     respuesta.success(req, res, servicios, 200);
+}
+
+async function obtenerFotosLugar(req, res, next) { 
+    try {
+        const fotos = await controlador.obtenerFotosLugar(req.params.id);
+        respuesta.success(req, res, fotos, 200);
+    } catch (error) {
+        console.error('RUTA - Error obteniendo fotos:', error);
+        next(error);
+    }
 }
 
 async function obtenerTodosServicios(req, res, next) {
